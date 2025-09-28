@@ -1,0 +1,150 @@
+{
+    "message": "Data uploaded successfully",
+    "data": [
+        {
+            "id": "b1c1e1f0-4c3b-4c5b-8c1e-1f3e1c1e1f0a",
+            "title": "Overview",
+            "text": "This document explores the intricacies of designing and building an AI-driven solution specifically intended to address queries from apprentices regarding their unit-specific learning content. The system architecture is composed of three main components: a Large Language Model (LLM) capable of natural language understanding and generation, the Pinecone vector database which enables fast and accurate semantic search, and the RAG methodology powered by LangChain for dynamic retrieval and synthesis of information. Together, these components form a cohesive workflow: when an apprentice poses a question, the system interprets the intent, searches across a semantically indexed database of educational materials, retrieves the most relevant information, and generates a clear, context-aware response. This enables apprentices to obtain reliable explanations, clarifications, and guidance, mirroring the experience of interacting with a knowledgeable tutor."
+        },
+        {
+            "id": "c2d2e2f1-5d4c-4d6c-9d2f-2f4e2d2e2f1b",
+            "title": "Objective Primary",
+            "text": ""
+        },
+        {
+            "id": "f1c3b1e0-5c3e-4c1b-8c3e-1b1e3c1b3e1f",
+            "title": "Objective",
+            "text": "The principal aim of this AI solution is to empower apprentices to interact with their unit learning content in the most natural way possible—using conversational language. Rather than sifting through manuals or static resources, apprentices can simply ask questions as they arise and receive immediate, tailored answers. The integration of semantic search and generative models ensures that responses are not only correct but also contextually sensitive to the apprentice’s current area of study and understanding level. By automating the comprehension and retrieval of learning materials, the system guarantees that each response is both highly relevant and easily understandable, facilitating deeper learning and quicker problem resolution."
+        },
+        {
+            "id": "a2b4c1d0-6e3f-4c2b-9c4d-2c1d4e2b3f2a",
+            "title": "Secondary Objectives",
+            "text": "Beyond merely answering questions, the solution is designed to boost the overall efficiency and engagement of the learning process. Instant, conversational feedback eliminates bottlenecks in knowledge acquisition, allowing apprentices to maintain momentum in their studies. The interactive nature of the system encourages curiosity and sustained engagement, as learners experience the satisfaction of having their questions acknowledged and answered in real time. Moreover, the scalable, automated delivery of knowledge offers institutions the means to support large numbers of apprentices simultaneously, reducing the need for constant human intervention and enabling educators to focus on."
+        },
+        {
+            "id": "f1c3b1e0-5c3e-4c1b-8c3e-1b1c3e1b3c1e",
+            "title": "Overview",
+            "text": "This specification describes the design and implementation of an AI-powered solution to answer apprentice queries related to their unit learning content. The solution integrates a state-of-the-art Large Language Model (LLM), Pinecone vector database, and Retrieval-Augmented Generation (RAG) via LangChain to provide accurate, semantic, and contextually relevant responses to apprentices."
+        },
+        {
+            "id": "a2d4e5f6-7b8c-4d1a-9e2b-3c4d5e6f7a8b",
+            "title": "Objective",
+            "text": "Primary Objective: Enable apprentices to query their unit learning content in natural language and receive precise, helpful responses. Utilise AI to interpret, search, and retrieve unit learning materials, ensuring high relevance and clarity. Secondary Objectives: Improve learning efficiency and engagement through rapid, interactive feedback. Automate knowledge delivery and query resolution for scalable education support."
+        },
+        {
+            "id": "b3c4d5e6-8f7a-4b2c-9e3d-4c5d6e7f8a9b",
+            "title": "Success Criteria",
+            "text": "Response accuracy rate above 90% (as determined by pilot feedback and expert review). Average response time below 5 seconds per query. System uptime greater than 99.5% during operational hours. User satisfaction score above 4.5/5 in periodic surveys. Capability to handle at least 10,000 concurrent users. All queries must be matched to unit content or gracefully handled if out-of-scope."
+        },
+        {
+            "id": "b1c1e1a0-4c3e-4c3b-8c1e-1a0b1c1e4a3b",
+            "title": "High-Level Requirements",
+            "text": "Support for querying in natural language (English, extensible to other languages). Unit learning content must be ingested and stored in Pinecone as vector embeddings. LangChain-powered RAG must perform semantic search over the content. LLM must compose final, contextually appropriate answer using retrieved content. System must provide an API for integration with web or mobile interfaces. Logging and monitoring of queries and responses for improvement and compliance. Secure handling and storage of content and user data. Scalable infrastructure to support growth."
+        },
+        {
+            "id": "c2d2f2b1-5d4f-4d4c-9d2f-2b1c2d2f5b4c",
+            "title": "Detailed Requirements",
+            "text": "Functional Requirements Ingest unit learning content from various sources (PDF, DOCX, plain text). Transform content into vector embeddings via selected model (e.g., OpenAI Ada, Cohere). Store embeddings in Pinecone with metadata (unit name, topics, tags). Receive apprentice queries via REST API. Use LangChain RAG to perform semantic search over Pinecone, returning top-N relevant chunks. Send retrieved chunks and the user query to the selected LLM (e.g., GPT-4, Claude). LLM synthesises and returns an answer, referencing relevant unit material. Return answer and supporting material (citations, references) to user-facing application. Track query-response pairs for analytics. Error handling for non-matching or ambiguous queries. To realize these objectives, the system must be architected with precise functionality and robust safeguards."
+        },
+        {
+            "id": "b1c1e1f0-3c4e-4c3b-8c5e-1c1e1f0b3c4e",
+            "title": "Content Ingestion and Processing",
+            "text": "Multi-format Content Support: The system shall accept educational unit content in multiple formats, including but not limited to PDF, DOCX, plain text, and potentially HTML or markdown. Automated extraction pipelines must handle formatting inconsistencies and preserve content hierarchy (e.g., headings, bullet points, tables) for optimal downstream retrieval. Metadata Extraction and Enrichment: During ingestion, the system shall extract metadata—such as unit name, learning objectives, topic lists, source provenance, authorship, date, and relevant tags—and enrich it where possible through automated classification or manual curation tools. Content Preprocessing: Prior to embedding, textual content will be normalized (removal of non-text elements, correction of encoding issues) and segmented into granular, context-aware chunks (e.g., paragraphs or sub-sections) to maximize search efficacy and response specificity."
+        },
+        {
+            "id": "d2e2f2a1-4c5e-4d4b-9c6e-2d2e2f2a4c5e",
+            "title": "Vector Embedding and Storage",
+            "text": "Model Selection and Configuration: The embedding model (such as OpenAI Ada or Cohere) must be configurable, allowing for upgrades or model switching as technology evolves. Embeddings shall capture semantic relationships suited for educational query contexts. Pinecone Vector Database: The system will interface with Pinecone for vector storage, associating each embedding with comprehensive metadata. Index strategies will support fast retrieval, with scalability for millions of content."
+        },
+        {
+            "id": "b1c1e1f0-4c3e-4c3b-8c1e-1f0b1c1e4f0a",
+            "title": "Query Handling and Retrieval",
+            "text": "An authenticated, well-documented RESTful API shall receive apprentice queries, including support for batch queries and streaming responses where appropriate."
+        },
+        {
+            "id": "c2d2e2f1-5d4e-5d4c-9d2e-2f1c2d2e5f1b",
+            "title": "Language Support and Extensibility",
+            "text": "The natural language processing pipeline will initially support English, but will be architected for future expansion to additional languages (with locale detection and multilingual embeddings as required)."
+        },
+        {
+            "id": "d3e3f3g2-6e5f-6e5d-0d3e-3g2d3e3f6g2c",
+            "title": "Semantic Search Pipeline",
+            "text": "LangChain’s Retriever-Augmented Generation (RAG) module shall be integrated to perform semantic similarity search over the Pinecone index, returning the top-N most relevant content chunks. The N parameter must be configurable based on use case (e.g., user expertise, query complexity)."
+        },
+        {
+            "id": "e4f4g4h3-7f6g-7f6e-1e4f-4h3e4f4g7h3d",
+            "title": "Prompt Engineering",
+            "text": "Retrieved chunks along with the original query will be assembled into a prompt for the selected LLM, following best practices in prompt engineering to maximize answer accuracy, relevance, and pedagogical clarity."
+        },
+        {
+            "id": "f5g5h5i4-8g7h-8g7f-2f5g-5i4f5g5h8i4e",
+            "title": "Answer Synthesis and Presentation",
+            "text": "The LLM (e.g., GPT-4, Claude) will synthesise comprehensive, contextually relevant answers, directly referencing retrieved unit material. Responses must include citations or references to source chunks, with citation format customizable to institutional requirements. The answer returned to the user-facing application shall include not only the synthesized response but also the supporting material (citations, referenced content, and optionally explanations of."
+        },
+        {
+            "id": "b1c1e1a0-5c3e-4c1b-8c3e-1f1e1a0b1c1e",
+            "title": "Out-of-Scope Handling",
+            "text": "If the query cannot be matched to available unit content, the system will return a graceful fallback response explaining the limits and suggesting the user rephrase or try a related query."
+        },
+        {
+            "id": "c2d2e2b1-6d4f-4d2c-9d4f-2e2b2c2d2e2f",
+            "title": "Monitoring, Logging, and Analytics",
+            "text": "Query and Response Logging: All query-response pairs will be logged with timestamps, anonymized user identifiers, unit/topic references, and system performance metrics (latency, retrieval relevance scores) for ongoing analytics and compliance. Error and Exception Tracking: The system will track ingestion, retrieval, and response errors, providing detailed logs for troubleshooting and continuous improvement. Analytics Dashboard: An internal dashboard will visualize usage statistics, query types, response quality ratings (if available), and patterns in out-of-scope queries to inform curriculum improvements and user support initiatives."
+        },
+        {
+            "id": "d3e3f3c2-7e5g-5e3d-0e5g-3f3c3d3e3f3g",
+            "title": "Security, Privacy, and Compliance",
+            "text": "Secure Data Handling: All content, logs, and user data must be encrypted in transit and at rest. Role-based access controls will govern all administrative interfaces and data stores. Data Retention Policies: The system shall implement configurable data retention and deletion policies aligned with institutional and legal requirements (e.g., GDPR, FERPA). User Privacy: Personal information is to be minimized, anonymized where possible, and never exposed in logs, responses, or analytics."
+        },
+        {
+            "id": "b1c1e1f0-5c3e-4c8b-8c1e-1f0b1c1e1f0b",
+            "title": "Audit Trails",
+            "text": "Comprehensive audit trails will be maintained for any administrative or privileged operations on content or user data."
+        },
+        {
+            "id": "c2d2e2f1-6d4f-4d9b-9d2e-2f1c2d2e2f1c",
+            "title": "Scalability and Performance",
+            "text": "Horizontal Scaling: The ingestion, retrieval, and response-serving components must scale horizontally to accommodate growth in both content volume and user queries without degradation in performance. Resilience and Availability: All services should be architected for high availability, with failover mechanisms, distributed deployments, and regular backup policies. Performance Benchmarks: The system shall meet predefined service-level agreements (SLAs) for average response time, throughput, and error rates, with periodic performance testing and capacity planning. These comprehensive requirements aim to ensure the system is robust, flexible, secure, and able to support ongoing educational innovation."
+        },
+        {
+            "id": "d3e3f3g2-7e5f-5e0c-8e3f-3g2d3e3f3g2d",
+            "title": "Non-Functional Requirements",
+            "text": "Performance: Response latency under 5 seconds; batch ingest throughput at least 1000 documents/hour. Scalability: Horizontal scaling for Pinecone, API, and LLM invocation; cloud-native deployment (e.g., Kubernetes). Reliability: 99.5% uptime; auto-retry for failed requests. Security: Authentication (OAuth2/JWT), encrypted data in transit and at rest. Privacy: Compliance with GDPR/FERPA; no use of apprentice personal data for model training. Maintainability: Modular microservices for ingest, search, LLM invocation, API; CI/CD pipelines. Observability: Centralised logging (ELK stack), metrics (Prometheus), alerting."
+        },
+        {
+            "id": "e4f4g4h3-8f6g-6f1d-9f4g-4h3e4f4g4h3e",
+            "title": "Technology Architecture",
+            "text": "LLM Selection: OpenAI GPT-4 or comparable (API-based). Vector Database: Pinecone for"
+        },
+        {
+            "id": "b1c1e1f0-5c3e-4c3b-8c1e-1f0c1e1b3c1e",
+            "title": "Technology Design",
+            "text": "Content Pipeline: Scheduler triggers batch ingestion; parser extracts text; embedder produces vectors; vectors ingested to Pinecone. Query Handling: User submits query via UI; API receives and forwards to LangChain; LangChain retrieves relevant content from Pinecone; LLM receives query and retrieved context, generates answer, sends to API. Feedback Loop: Optionally allow user feedback per answer for later tuning and retraining. Monitoring: Each step logs events and metrics to centralised dashboard."
+        },
+        {
+            "id": "d2f2e2a0-6c4f-4d4c-9c2e-2a2f2e2b4d2f",
+            "title": "Solution Architecture (Detailed)",
+            "text": "Step 1: Content Ingestion — ETL pipeline parses unit learning materials, generates vector embeddings. Step 2: Vector Storage — Embeddings stored in Pinecone, indexed by unit, topic, and metadata. Step 3: User Query — Apprentice submits a query via frontend; API receives query. Step 4: Semantic Search — LangChain RAG queries Pinecone for the most relevant content. Step 5: LLM Response Generation — Retrieved content and query sent to"
+        },
+        {
+            "id": "b1c1e1f4-5c3e-4c1b-8c1e-1f4b5c3e1d2a",
+            "title": "LLM",
+            "text": "LLM synthesises an answer. Step 6: Response Delivery — Answer and supporting citations returned to frontend; user sees response. Step 7: Feedback/Logging — All interactions logged; optional feedback stored for improvements."
+        },
+        {
+            "id": "c2d2e2f5-6d4e-4d2c-9d2f-2e5d6c4e2e3b",
+            "title": "Non-Functional Criteria",
+            "text": "Scalability: System must handle spikes in traffic and increasing content volume without degradation. Resilience: Components must restart automatically upon failure; stateless services preferred. Security: All APIs must require authentication; audit logging of sensitive actions. Privacy: No apprentice personal data stored outside operational requirements; regular data purges. Extensibility: Architecture must support additional languages, new content types, and more LLM models. Compliance: Adhere to applicable educational, national, and cloud-provider regulations. User Experience: UI must be intuitive, responsive, and accessible via web and mobile."
+        },
+        {
+            "id": "d3e3f3g6-7e5f-4e3d-0e3f-3f6g7d5e3f4c",
+            "title": "Visuals & Graphics",
+            "text": "Architecture Diagram: Prompt Flow Diagram: User Journey:"
+        },
+        {
+            "id": "e4f4g4h7-8f6g-5f4e-1f4g-4g7h8e6f4g5d",
+            "title": "References & Recommendations",
+            "text": "Pinecone documentation LangChain RAG framework guides OpenAI API documentation Best practices in educational AI design Initial spec guidance"
+        }
+    ]
+}

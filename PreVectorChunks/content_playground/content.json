@@ -1,0 +1,34 @@
+{
+    "features": [
+        {
+            "feature_idx": 0,
+            "name": "id",
+            "type": {
+                "dtype": "string",
+                "_type": "Value"
+            }
+        },
+        {
+            "feature_idx": 1,
+            "name": "text",
+            "type": {
+                "dtype": "string",
+                "_type": "Value"
+            }
+        }
+    ],
+    "rows": [
+          {
+            "row_idx": 0,
+            "row": {
+                "id": "st100000",
+                "title": "Intro",
+                "text": "Introduction Test intro"
+            },
+            "truncated_cells": []
+        }
+           ],
+    "num_rows_total": 207632,
+    "num_rows_per_page": 100,
+    "partial": false
+}
