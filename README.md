@@ -24,13 +24,13 @@ This module helps you:
 ## 📦 Installation
 ```bash
 pip install prevectorchunks
-
+````
 How to import in a file:  
 ```python
 from PreVectorChunks.services import chunk_documents_crud_vdb
 
-How to use Pinecone and OpenAI:
-Use a .env file in your project root to configure API keys:
+#How to use Pinecone and OpenAI:
+#Use a .env file in your project root to configure API keys:
 
 PINECONE_API_KEY=YOUR_API_KEY
 OPENAI_API_KEY=YOUR_API_KEY
@@ -45,4 +45,4 @@ chunk_and_upsert_to_vdb(index_n,instructions,file_path="content_playground/conte
 fetch_vdb_chunks_grouped_by_document_name(index_n): 
 #function that updates existing chunks - you need an index name inside index_n 
 update_vdb_chunks_grouped_by_document_name(index_n,dataset):
-```python
+```
