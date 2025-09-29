@@ -11,7 +11,7 @@ import os
 from django.http import JsonResponse, HttpResponse
 
 
-from PreVectorChunks.utils.file_loader import prepare_chunked_text
+from PreVectorChunks.utils.file_loader import prepare_chunked_text, extract_file_details
 from PreVectorChunks.utils.llm_wrapper import LLMClientWrapper
 from pinecone import Pinecone, ServerlessSpec
 from collections import defaultdict
@@ -222,9 +222,12 @@ def queryToLLM(query):
 # prepares chunked json objects
 def upload_and_prepare_file_content_in_chunks(request,instructions):
     try:
+
         uploaded_file = uploaded_file_ref(request)
-        chunked_text=prepare_chunked_text(uploaded_file,instructions)
-        return chunked_text,uploaded_file.name
+        file_name, file_bytes = extract_file_details(
+            uploaded_file)
+        chunked_text = chunk_documents(instructions,file_name,file_bytes)
+        return chunked_text,file_name
     except Exception as e:
         return JsonResponse({"error": f"An unexpected error occurred: {str(e)}"}, status=500)
 
@@ -392,9 +395,10 @@ def chunk_documents(instructions,file_name,file_path="content_playground/content
     return prepare_chunked_text(file_path, file_name,instructions)
 
 #function that chunks any document as well as inserts into vdb
-def chunk_and_upsert_to_vdb(index_n,instructions,file_path="content_playground/content.json"):
-    chunked_dataset = prepare_chunked_text(file_path, instructions)
-    document_name = os.path.basename(file_path)  # just "content.json"
+def chunk_and_upsert_to_vdb(index_n,instructions,file_name,file_path="content_playground/content.json"):
+    chunked_dataset = prepare_chunked_text(file_path, file_name, instructions)
+    document_name = file_name if file_name else os.path.basename(file_path)   + uuid.uuid4().hex
+    
     upsertRecord(index_n,chunked_dataset,document_name)
     return chunked_dataset, document_name
 
