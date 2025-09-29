@@ -18,7 +18,7 @@ from collections import defaultdict
 from itertools import chain
 from dotenv import load_dotenv
 # create an index if not already existing
-load_dotenv()
+load_dotenv(override=True)
 index_name = "dl-doc-search"
 EMBED_DIM = 1536
 pc = Pinecone(api_key=os.getenv("PINECONE_API_KEY"))
@@ -215,83 +215,11 @@ def queryToLLM(query):
     return openAiResponse
 
 
-@csrf_exempt
-@require_http_methods(["POST"])
-def queryUnitContent(request):
-    response = request.body
-    data = json.loads(response)
-    query = data["query"]
-    # loaded_dataset = loadDataset()
-   # index = createIndexForPineCone()
-    # uprec=upsertRecord()
-    response = queryToLLM(query)
-    return HttpResponse(response)
 
-
-@csrf_exempt
-@require_http_methods(["POST"])
-@csrf_exempt
-@require_http_methods(["POST"])
-def upload_json_file(request):
-    return upload_file(request)
-
-
-@csrf_exempt
-@require_http_methods(["POST"])
-def upsertContentToVDB(request):
-    dataset=upload_file(request)
-    if dataset is type(JsonResponse):
-        return dataset
-    else:
-        upsertRecord(dataset)
-        return JsonResponse({"message": "Data uploaded successfully"
-                             ,"data":dataset}, status=200)
-
-#
-# #this service is called to:
-# provide a dcoument, LLM instruction
+# function to
 # upload a particular document
 # takes LLM instruction about how to process/chunk the document
 # prepares chunked json objects
-# insert the chunked json objects into vector database
-@csrf_exempt
-@require_http_methods(["POST"])
-def upsertContentToVDB_Chunks(request,instructions):
-    if request.method == "POST":
-        try:
-            # Get the query (text input)
-            instructions = request.POST.get("query")
-            if not instructions:
-                return JsonResponse({"error": "Missing query"}, status=400)
-
-            # Get the uploaded file
-            if "file" not in request.FILES:
-                return JsonResponse({"error": "Missing file"}, status=400)
-
-            # Process file + query
-            dataset,file_name = upload_and_prepare_file_content_in_chunks(request, instructions)
-
-            if isinstance(dataset, JsonResponse):
-                return dataset
-            else:
-                document_name=file_name+uuid.uuid4().hex
-                upsertRecord(dataset,document_name=document_name)
-                return JsonResponse(
-                    {"message": "Data uploaded successfully", "data": dataset},
-                    status=200
-                )
-
-        except Exception as e:
-            return JsonResponse({"error": str(e)}, status=500)
-
-
-    return JsonResponse({"error": "Invalid request method"}, status=405)
-
-def load_file_and_upsert_chunks_to_vdb(instructions,file_path="content_playground/content.json"):
-    chunked_dataset = prepare_chunked_text(file_path, instructions)
-    file_name = os.path.basename(file_path)  # just "content.json"
-    return chunked_dataset, file_name
-
 def upload_and_prepare_file_content_in_chunks(request,instructions):
     try:
         uploaded_file = uploaded_file_ref(request)
@@ -300,6 +228,8 @@ def upload_and_prepare_file_content_in_chunks(request,instructions):
     except Exception as e:
         return JsonResponse({"error": f"An unexpected error occurred: {str(e)}"}, status=500)
 
+# function to
+# upload a particular document
 def uploaded_file_ref(request):
     # Check if the request contains a file
     if 'file' not in request.FILES:
@@ -456,9 +386,10 @@ def qfetch_records_grouped_by_document_name(index, batch_size=100,limit=100):
     return dict(grouped_records)
 
 
+
 #function that chunks any document
-def chunk_documents(instructions,file_path="content_playground/content.json"):
-    return prepare_chunked_text(file_path, instructions)
+def chunk_documents(instructions,file_name,file_path="content_playground/content.json"):
+    return prepare_chunked_text(file_path, file_name,instructions)
 
 #function that chunks any document as well as inserts into vdb
 def chunk_and_upsert_to_vdb(index_n,instructions,file_path="content_playground/content.json"):

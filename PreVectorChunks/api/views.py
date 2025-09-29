@@ -10,8 +10,11 @@ from PreVectorChunks.services import chunk_documents_crud_vdb
 
 from pinecone import Pinecone, ServerlessSpec
 from dotenv import load_dotenv
+
+from PreVectorChunks.utils.file_loader import extract_file_details, extract_content_agnostic
+
 # create an index if not already existing
-load_dotenv()
+load_dotenv(override=True)
 index_name = "dl-doc-search"
 EMBED_DIM = 1536
 pc = Pinecone(api_key=os.getenv("PINECONE_API_KEY"))
@@ -32,10 +35,12 @@ def queryUnitContent(request):
 
 @csrf_exempt
 @require_http_methods(["POST"])
-@csrf_exempt
-@require_http_methods(["POST"])
-def upload_json_file(request):
-    return chunk_documents_crud_vdb.upload_file(request)
+def chunk_documents_endpoint(request):
+    uploaded_file=chunk_documents_crud_vdb.uploaded_file_ref(request)
+    filename,file_bytes=extract_file_details(
+        uploaded_file)
+
+    return chunk_documents_crud_vdb.chunk_documents("",filename,file_bytes)
 
 
 @csrf_exempt

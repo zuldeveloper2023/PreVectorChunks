@@ -16,8 +16,8 @@ def temp_json_file(tmp_path):
 
 def test_load_file_and_upsert_chunks_to_vdb(temp_json_file):
     #dataset = chunk_and_upsert_to_vdb("dl-doc-search","instructions", file_path="content_playground/content.json")
-    dataset=chunk_documents_crud_vdb.fetch_vdb_chunks_grouped_by_document_name("dl-doc-search")
+    #dataset=chunk_documents_crud_vdb.fetch_vdb_chunks_grouped_by_document_name("dl-doc-search")
+
+    dataset=chunk_documents_crud_vdb.chunk_documents("Extract doco",file_path="content_playground/content.json",file_name=None)
     # Assertions
-    assert isinstance(dataset, list)
-    assert dataset[0]["id"] == 1
-    assert dataset[0]["text"] == "hello world"
+

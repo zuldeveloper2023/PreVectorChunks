@@ -9,11 +9,63 @@ import uuid
 from openai import OpenAI
 from openai import OpenAI
 from .llm_wrapper import LLMClientWrapper  # Relative import
-
+from dotenv import load_dotenv
 import tempfile
+load_dotenv(override=True)
 # Initialize OpenAI client
 client =  OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 from django.core.files.uploadedfile import UploadedFile
+
+
+def extract_content_agnostic(file, filename=None):
+    """
+    Extract text content from a file.
+
+    Supports:
+    - PDF (.pdf)
+    - Word (.docx)
+    - Text (.txt)
+    - Images (.png, .jpg, .jpeg, .tiff, .bmp)
+
+    Parameters:
+    - file: either a file path (str) or bytes (binary content)
+    - filename: required if `file` is bytes, to determine extension
+    """
+    # Determine if file is path or binary
+    if isinstance(file, str):
+        filepath = file
+        ext = os.path.splitext(filepath)[1].lower()
+    elif isinstance(file, bytes):
+        if not filename:
+            raise ValueError("filename must be provided if passing binary content")
+        ext = os.path.splitext(filename)[1].lower()
+        # Write bytes to a temporary file
+        with tempfile.NamedTemporaryFile(delete=False, suffix=ext) as tmp:
+            tmp.write(file)
+            filepath = tmp.name
+    else:
+        raise TypeError("file must be a string path or bytes")
+
+    # At this point, `filepath` is a valid file path on disk
+    # TODO: implement your extraction logic based on `ext` and `filepath`
+    # Example:
+    # if ext == ".pdf":
+    #     content = extract_pdf(filepath)
+    # elif ext == ".docx":
+    #     content = extract_docx(filepath)
+    # ...
+
+    text = load_file_by_type(ext, filepath)
+
+    # If we created a temporary file, optionally delete it
+    if isinstance(file, UploadedFile) and not hasattr(file, 'temporary_file_path'):
+        try:
+            os.remove(filepath)
+        except Exception:
+            pass
+
+    return text.strip()
+
 
 def extract_content(file):
     """
@@ -45,8 +97,20 @@ def extract_content(file):
         filepath = file
         ext = os.path.splitext(filepath)[1].lower()
 
-    text = ""
+    text = load_file_by_type(ext, filepath)
 
+    # If we created a temporary file, optionally delete it
+    if isinstance(file, UploadedFile) and not hasattr(file, 'temporary_file_path'):
+        try:
+            os.remove(filepath)
+        except Exception:
+            pass
+
+    return text.strip()
+
+
+def load_file_by_type(ext, filepath):
+    text = ""
     if ext == ".pdf":
         reader = PdfReader(filepath)
         text = "\n".join([p.extract_text() or "" for p in reader.pages])
@@ -69,17 +133,7 @@ def extract_content(file):
             text = json.dumps(data, ensure_ascii=False, indent=2)
     else:
         raise ValueError(f"Unsupported file type: {ext}")
-
-    # If we created a temporary file, optionally delete it
-    if isinstance(file, UploadedFile) and not hasattr(file, 'temporary_file_path'):
-        try:
-            os.remove(filepath)
-        except Exception:
-            pass
-
-    return text.strip()
-
-
+    return text
 
 
 def split_text_by_words(text, chunk_size=200):
@@ -135,13 +189,22 @@ def process_large_text(text, instructions,chunk_size=200):
 
 
 
-def prepare_chunked_text(uploaded_file,instructions):
-    content =extract_content(uploaded_file)
+def prepare_chunked_text(file_path,file_name,instructions):
+    content =extract_content_agnostic(file_path,file_name)
     results=process_large_text(content,instructions, chunk_size=200)
     print (results)
     return results
 
+#this function takes a django file and extracts filename and byte content
+def extract_file_details(uploaded_file):
+    # 1. Get the filename
+    filename = uploaded_file.name
 
+    # 2. Get the file content as bytes
+    file_bytes = uploaded_file.read()  # reads entire file into memory
+
+    # Now you can call your extract_content function
+    return filename, file_bytes
 
 
 
