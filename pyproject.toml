@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "prevectorchunks"
-version = "0.1.1"
+version = "0.1.2"
 description = "A Python module that allows to convert a document into chunks to be inserted into pinecone vector database"
 readme = "README.md"  # <- important for PyPI
 license = { file = "LICENSE" }
