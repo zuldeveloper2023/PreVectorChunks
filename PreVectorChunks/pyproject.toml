@@ -1,0 +1,33 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "prevectorchunks-core"
+version = "0.1.1"
+description = "A Python module that allows to convert a document into chunks to be inserted into pinecone vector database"
+readme = "README.md"  # <- important for PyPI
+license = { file = "LICENSE" }
+authors = [
+    { name = "Zul Al-Kabir", email = "zul.developer.2023@gmail.com" }
+]
+dependencies = [
+    "Django==5.1",
+    "packaging~=24.1",
+    "requests~=2.32.3",
+    "openai~=1.37.1",
+    "httpx~=0.27.0",
+    "python-dotenv~=1.0.1",
+    "django-cors-headers~=4.4.0",
+    "PyJWT~=2.7.0",
+    "fastapi~=0.112.2",
+    "datasets~=4.1.0",
+    "pinecone~=7.3.0",
+    "pytesseract~=0.3.13",
+    "python-docx~=1.2.0",
+    "PyPDF2~=3.0.1",
+    "pillow~=11.3.0"
+]
+
+[project.urls]
+Homepage = "https://github.com/yourusername/mydep"

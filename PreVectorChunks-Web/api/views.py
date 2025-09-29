@@ -11,7 +11,6 @@ from PreVectorChunks.services import chunk_documents_crud_vdb
 from pinecone import Pinecone, ServerlessSpec
 from dotenv import load_dotenv
 
-from PreVectorChunks.utils.file_loader import extract_file_details, extract_content_agnostic
 
 # create an index if not already existing
 load_dotenv(override=True)
