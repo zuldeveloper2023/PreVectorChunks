@@ -1,6 +1,8 @@
 import json
 import warnings  # Correct module for warnings, including PendingDeprecationWarning
 import os
+from pathlib import Path
+
 from docx import Document
 from PyPDF2 import PdfReader
 from PIL import Image
@@ -34,6 +36,9 @@ def extract_content_agnostic(file, filename=None):
     # Determine if file is path or binary
     if isinstance(file, str):
         filepath = file
+        ext = os.path.splitext(filepath)[1].lower()
+    elif isinstance(file, Path):
+        filepath = str(file)
         ext = os.path.splitext(filepath)[1].lower()
     elif isinstance(file, bytes):
         if not filename:

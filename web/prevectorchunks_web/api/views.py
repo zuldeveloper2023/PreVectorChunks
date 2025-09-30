@@ -6,11 +6,12 @@ from django.views.decorators.http import require_http_methods
 from openai import OpenAI
 import os
 from django.http import JsonResponse, HttpResponse
-from PreVectorChunks.services import chunk_documents_crud_vdb
 
 from pinecone import Pinecone, ServerlessSpec
 from dotenv import load_dotenv
 
+
+from core.prevectorchunks_core.services import chunk_documents_crud_vdb
 
 # create an index if not already existing
 load_dotenv(override=True)

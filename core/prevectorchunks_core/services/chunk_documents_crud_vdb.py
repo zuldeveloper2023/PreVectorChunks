@@ -11,8 +11,9 @@ import os
 from django.http import JsonResponse, HttpResponse
 
 
-from PreVectorChunks.utils.file_loader import prepare_chunked_text, extract_file_details
-from PreVectorChunks.utils.llm_wrapper import LLMClientWrapper
+from ..utils.file_loader import prepare_chunked_text, extract_file_details
+from ..utils.llm_wrapper import LLMClientWrapper
+
 from pinecone import Pinecone, ServerlessSpec
 from collections import defaultdict
 from itertools import chain

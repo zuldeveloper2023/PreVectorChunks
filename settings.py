@@ -100,7 +100,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-ROOT_URLCONF = 'PreVectorChunks-Web.urls'
+ROOT_URLCONF = 'PreVectorChunks.urls'
 
 
 TEMPLATES = [
