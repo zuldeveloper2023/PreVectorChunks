@@ -8,11 +8,16 @@ from PyPDF2 import PdfReader
 from PIL import Image
 import pytesseract
 import uuid
+
+from langchain_text_splitters import RecursiveCharacterTextSplitter, CharacterTextSplitter
 from openai import OpenAI
 from openai import OpenAI
 from .llm_wrapper import LLMClientWrapper  # Relative import
 from dotenv import load_dotenv
 import tempfile
+
+from ..config.splitter_config import SplitterConfig
+
 load_dotenv(override=True)
 # Initialize OpenAI client
 client =  OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
@@ -141,10 +146,39 @@ def load_file_by_type(ext, filepath):
     return text
 
 
-def split_text_by_words(text, chunk_size=200):
+def split_text_by_words(text, splitter_config:SplitterConfig=None):
     """Split text into chunks of N words."""
-    words = text.split()
-    return [" ".join(words[i:i + chunk_size]) for i in range(0, len(words), chunk_size)]
+    if splitter_config is None:
+        splitter_config =  SplitterConfig(chunk_size= 200, chunk_overlap= 0)
+        words = text.split()
+        return [" ".join(words[i:i + splitter_config.chunk_size]) for i in
+                range(0, len(words), splitter_config.chunk_size)]
+    else:
+        if splitter_config.split_type == "standard":
+            words = text.split()
+            return [" ".join(words[i:i + splitter_config.chunk_size]) for i in
+                    range(0, len(words), splitter_config.chunk_size)]
+        elif splitter_config.split_type == "RecursiveCharacterTextSplitter":
+            text_splitter = RecursiveCharacterTextSplitter(
+                separators=splitter_config.separators,
+                chunk_size=splitter_config.chunk_size,
+                chunk_overlap=splitter_config.chunk_overlap,
+            )
+            chunked_content = text_splitter.split_text(text)
+            return chunked_content
+        elif splitter_config.split_type == "CharacterTextSplitter":
+            text_splitter = CharacterTextSplitter(
+                separators=splitter_config.separators,
+                chunk_size=splitter_config.chunk_size,
+                chunk_overlap=splitter_config.chunk_overlap,
+            )
+            chunked_content = text_splitter.split_text(text)
+            return chunked_content
+
+        else:
+            words = text.split()
+            return [" ".join(words[i:i + splitter_config.chunk_size]) for i in
+                    range(0, len(words), splitter_config.chunk_size)]
 
 
 def process_with_llm(chunk,instructions):
@@ -177,9 +211,9 @@ def process_with_llm(chunk,instructions):
     return structured_data
 
 
-def process_large_text(text, instructions,chunk_size=200):
+def process_large_text(text, instructions,splitter_config:SplitterConfig=None):
     """Main function: split -> send to LLM -> collect results."""
-    chunks = split_text_by_words(text, chunk_size)
+    chunks = split_text_by_words(text, splitter_config=splitter_config)
     all_results = []
 
     for chunk in chunks:
@@ -194,9 +228,9 @@ def process_large_text(text, instructions,chunk_size=200):
 
 
 
-def prepare_chunked_text(file_path,file_name,instructions,chunk_size=200):
+def prepare_chunked_text(file_path,file_name,instructions,chunk_size=200,splitter_config:SplitterConfig=None):
     content =extract_content_agnostic(file_path,file_name)
-    results=process_large_text(content,instructions, chunk_size=chunk_size)
+    results=process_large_text(content,instructions, splitter_config=splitter_config)
     print (results)
     return results
 

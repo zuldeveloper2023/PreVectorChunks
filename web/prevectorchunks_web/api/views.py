@@ -10,7 +10,7 @@ from django.http import JsonResponse, HttpResponse
 from pinecone import Pinecone, ServerlessSpec
 from dotenv import load_dotenv
 
-
+from core.prevectorchunks_core.config.splitter_config import SplitterConfig
 from core.prevectorchunks_core.services import chunk_documents_crud_vdb
 
 # create an index if not already existing
@@ -54,6 +54,14 @@ def retrieve_chunk_documents_and_file_name_by_request(request):
     # Get the query (text input)
     instructions = request.POST.get("query")
     chunk_size = request.POST.get("chunk_size", "200")  # default is "200"
+    # Get JSON string from request
+    splitter_config_str = request.POST.get("splitter_config")  # e.g., '{"chunk_size": 300, "chunk_overlap": 0, ...}'
+
+    # Convert string to dict
+    splitter_config_dict = json.loads(splitter_config_str)
+
+    # Convert dict to dataclass
+    splitter_config = SplitterConfig(**splitter_config_dict)
     try:
         chunk_size = int(chunk_size)
     except ValueError:
@@ -66,7 +74,7 @@ def retrieve_chunk_documents_and_file_name_by_request(request):
         return JsonResponse({"error": "Missing file"}, status=400)
 
     return chunk_documents_crud_vdb.upload_and_prepare_file_content_in_chunks(request,
-                                                                              instructions,chunk_size=chunk_size)
+                                                                              instructions,splitter_config=splitter_config)
 
 
 #
