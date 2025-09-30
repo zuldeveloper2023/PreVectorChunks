@@ -12,7 +12,6 @@ Any developer working with:
 
 ---
 
-
 ## 🎯 What Does This Module Do?
 This module helps you:
 - **Chunk documents** into smaller fragments  
@@ -24,20 +23,17 @@ This module helps you:
 ## 📦 Installation
 ```bash
 pip install prevectorchunks-core
-````
+```
+
 How to import in a file:  
 ```python
 from PreVectorChunks.services import chunk_documents_crud_vdb
+```
 
-#How to use Pinecone and OpenAI:
-#Use a .env file in your project root to configure API keys:
-
+**Use .env for API keys:**
+```
 PINECONE_API_KEY=YOUR_API_KEY
 OPENAI_API_KEY=YOUR_API_KEY
-
-#how to call relevant functions:
-#Four key functions that you can call are below: 
-#function that chunks any document 
 ```
 
 ---
@@ -46,7 +42,7 @@ OPENAI_API_KEY=YOUR_API_KEY
 
 ### 1. `chunk_documents`
 ```python
-chunk_documents(instructions, file_path="content_playground/content.json", chunk_size=200)
+chunk_documents(instructions, file_path="content_playground/content.json", splitter_config=SplitterConfig())
 ```
 Splits the content of a document into smaller, manageable chunks.
 
@@ -54,8 +50,10 @@ Splits the content of a document into smaller, manageable chunks.
 - `instructions` (*dict or str*): Additional rules or guidance for how the document should be split.  
   - Example: `"split my content by biggest headings"`
 - `file_path` (*str*): Path to the input JSON/text file containing the content or content of the file. Default: `"content_playground/content.json"`.
-- `chunk_size` (*int*): Number of words per chunk (default = 200).
-
+- `splitter_config (optional) ` (*SplitterConfig*): (if none provided standard split takes place) Object that defines chunking behavior, e.g., `chunk_size`, `chunk_overlap`, `separator`, `split_type`.
+- i.e. splitter_config = SplitterConfig(chunk_size= 300, chunk_overlap= 0,separators=["\n"],split_type="RecursiveCharacterTextSplitter")
+- i.e. splitter_config = SplitterConfig(chunk_size= 300, chunk_overlap= 0,separators=["\n"],split_type="CharacterTextSplitter")
+- i.e. splitter_config = SplitterConfig(chunk_size= 300, chunk_overlap= 0,separators=["\n"],split_type="standard")
 **Returns**
 - A list of chunked strings including a unique id, a meaningful title and chunked text
 
@@ -68,15 +66,15 @@ Splits the content of a document into smaller, manageable chunks.
 
 ### 2. `chunk_and_upsert_to_vdb`
 ```python
-chunk_and_upsert_to_vdb(index_n, instructions, file_path="content_playground/content.json", chunk_size=200)
+chunk_and_upsert_to_vdb(index_n, instructions, file_path="content_playground/content.json", splitter_config=SplitterConfig())
 ```
 Splits a document into chunks (via `chunk_documents`) and **inserts them into a Vector Database**.
 
 **Parameters**
-- `index_n` (*str*): The name of the VDB index where chunks should be stored. for example, in pinecone, we can have an index 'dl-doco'
+- `index_n` (*str*): The name of the VDB index where chunks should be stored.
 - `instructions` (*dict or str*): Rules for splitting content (same as `chunk_documents`).
 - `file_path` (*str*): Path to the document file or content of the file. Default: `"content_playground/content.json"`.
-- `chunk_size` (*int*): Max words per chunk. Default: `200`.
+- `splitter_config` (*SplitterConfig*): Object that defines chunking behavior.
 
 **Returns**
 - Confirmation of successful insert into the VDB.
@@ -126,15 +124,19 @@ Updates existing chunks in the Vector Database by document name.
 
 ## 🚀 Example Workflow
 ```python
+from prevectorchunks_core.config import SplitterConfig
+
+splitter_config = SplitterConfig(chunk_size=150, chunk_overlap=0, separator=["\n"], split_type="RecursiveCharacterTextSplitter")
+
 # Step 1: Chunk a document
 chunks = chunk_documents(
     instructions="split my content by biggest headings",
     file_path="content_playground/content.json",
-    chunk_size=150
+    splitter_config=splitter_config
 )
 
 # Step 2: Insert chunks into VDB
-chunk_and_upsert_to_vdb("my_index", instructions="split by headings")
+chunk_and_upsert_to_vdb("my_index", instructions="split by headings", splitter_config=splitter_config)
 
 # Step 3: Fetch stored chunks
 docs = fetch_vdb_chunks_grouped_by_document_name("my_index")
@@ -149,5 +151,5 @@ update_vdb_chunks_grouped_by_document_name("my_index", dataset=docs)
 - Preprocessing documents for LLM ingestion  
 - Semantic search and Q&A systems  
 - Vector database indexing and retrieval  
-- Maintaining versioned document chunks  
+- Maintaining versioned document chunks
 
