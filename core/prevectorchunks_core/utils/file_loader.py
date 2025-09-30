@@ -194,9 +194,9 @@ def process_large_text(text, instructions,chunk_size=200):
 
 
 
-def prepare_chunked_text(file_path,file_name,instructions):
+def prepare_chunked_text(file_path,file_name,instructions,chunk_size=200):
     content =extract_content_agnostic(file_path,file_name)
-    results=process_large_text(content,instructions, chunk_size=200)
+    results=process_large_text(content,instructions, chunk_size=chunk_size)
     print (results)
     return results
 

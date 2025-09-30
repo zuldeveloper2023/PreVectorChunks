@@ -53,7 +53,11 @@ def chunk_documents_endpoint(request):
 def retrieve_chunk_documents_and_file_name_by_request(request):
     # Get the query (text input)
     instructions = request.POST.get("query")
-
+    chunk_size = request.POST.get("chunk_size", "200")  # default is "200"
+    try:
+        chunk_size = int(chunk_size)
+    except ValueError:
+        chunk_size = 200  # fallback default if user sent invalid value
     if not instructions:
         return JsonResponse({"error": "Missing query"}, status=400)
 
@@ -62,7 +66,7 @@ def retrieve_chunk_documents_and_file_name_by_request(request):
         return JsonResponse({"error": "Missing file"}, status=400)
 
     return chunk_documents_crud_vdb.upload_and_prepare_file_content_in_chunks(request,
-                                                                              instructions)
+                                                                              instructions,chunk_size=chunk_size)
 
 
 #

@@ -221,13 +221,13 @@ def queryToLLM(query):
 # upload a particular document
 # takes LLM instruction about how to process/chunk the document
 # prepares chunked json objects
-def upload_and_prepare_file_content_in_chunks(request,instructions):
+def upload_and_prepare_file_content_in_chunks(request,instructions,chunk_size):
     try:
 
         uploaded_file = uploaded_file_ref(request)
         file_name, file_bytes = extract_file_details(
             uploaded_file)
-        chunked_text = chunk_documents(instructions,file_name,file_bytes)
+        chunked_text = chunk_documents(instructions,file_name,file_bytes,chunk_size)
         return chunked_text,file_name
     except Exception as e:
         return JsonResponse({"error": f"An unexpected error occurred: {str(e)}"}, status=500)
@@ -392,11 +392,11 @@ def qfetch_records_grouped_by_document_name(index, batch_size=100,limit=100):
 
 
 #function that chunks any document
-def chunk_documents(instructions,file_name,file_path="content_playground/content.json"):
-    return prepare_chunked_text(file_path, file_name,instructions)
+def chunk_documents(instructions,file_name,file_path="content_playground/content.json",chunk_size=200):
+    return prepare_chunked_text(file_path, file_name,instructions,chunk_size)
 
 #function that chunks any document as well as inserts into vdb
-def chunk_and_upsert_to_vdb(index_n,instructions,file_name,file_path="content_playground/content.json"):
+def chunk_and_upsert_to_vdb(index_n,instructions,file_name,file_path="content_playground/content.json",chunk_size=200):
     chunked_dataset = prepare_chunked_text(file_path, file_name, instructions)
     document_name = file_name if file_name else os.path.basename(file_path)   + uuid.uuid4().hex
     
