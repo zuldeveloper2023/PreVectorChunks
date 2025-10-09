@@ -1,0 +1,1 @@
+recursive-include prevectorchunks_core/rlchunker/pretrained *.pt *.txt
