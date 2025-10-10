@@ -3,6 +3,7 @@ import pytest
 
 from core.prevectorchunks_core.config.splitter_config import SplitterConfig
 from core.prevectorchunks_core.services import chunk_documents_crud_vdb
+from core.prevectorchunks_core.utils.file_loader import SplitType
 
 
 # Create a temporary JSON file to test with
@@ -16,11 +17,10 @@ def temp_json_file(tmp_path):
 
 
 def test_load_file_and_upsert_chunks_to_vdb(temp_json_file):
-    #dataset = chunk_and_upsert_to_vdb("dl-doc-search","instructions", file_path="content_playground/content.json")
-    #dataset=chunk_documents_crud_vdb.fetch_vdb_chunks_grouped_by_document_name("dl-doc-search")
-    splitter_config = SplitterConfig(chunk_size= 300, chunk_overlap= 0,separators=["\n"],split_type="RecursiveCharacterTextSplitter")
+    splitter_config = SplitterConfig(chunk_size=300, chunk_overlap=0, separators=["\n"],
+                                     split_type=SplitType.R_PRETRAINED_PROPOSITION.value, min_rl_chunk_size=5,
+                                     max_rl_chunk_size=50,enableLLMTouchUp=False)
 
-    dataset=chunk_documents_crud_vdb.chunk_documents("extract", file_name=None, file_path=temp_json_file,splitter_config=splitter_config)
-    #dataset=chunk_documents_crud_vdb.chunk_documents("Extract doco",file_path="content_playground/content.json",file_name=None)
-    # Assertions
+    chunks=chunk_documents_crud_vdb.chunk_documents("extract", file_name=None, file_path="content.txt",splitter_config=splitter_config)
 
+    print(chunks)

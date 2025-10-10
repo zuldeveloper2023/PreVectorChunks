@@ -17,12 +17,22 @@ from dotenv import load_dotenv
 import tempfile
 
 from ..config.splitter_config import SplitterConfig
+from ..rlchunker.inference import RLChunker
+from ..services.propositional_index import PropositionalIndexer
 
 load_dotenv(override=True)
 # Initialize OpenAI client
 client =  OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 from django.core.files.uploadedfile import UploadedFile
 
+from enum import Enum
+
+class SplitType(Enum):
+    RECURSIVE = "RecursiveCharacterTextSplitter"
+    CHARACTER = "CharacterTextSplitter"
+    STANDARD = "standard"
+    R_PRETRAINED_PROPOSITION = "RLBasedTextSplitterWithProposition"
+    R_PRETRAINED = "RLBasedTextSplitter"
 
 def extract_content_agnostic(file, filename=None):
     """
@@ -146,7 +156,7 @@ def load_file_by_type(ext, filepath):
     return text
 
 
-def split_text_by_words(text, splitter_config:SplitterConfig=None):
+def split_text_by_config(text, splitter_config:SplitterConfig=None, binary_data=None):
     """Split text into chunks of N words."""
     if splitter_config is None:
         splitter_config =  SplitterConfig(chunk_size= 200, chunk_overlap= 0)
@@ -154,11 +164,14 @@ def split_text_by_words(text, splitter_config:SplitterConfig=None):
         return [" ".join(words[i:i + splitter_config.chunk_size]) for i in
                 range(0, len(words), splitter_config.chunk_size)]
     else:
-        if splitter_config.split_type == "standard":
+        """Split text into chunks of N words."""
+        if splitter_config.split_type == SplitType.STANDARD.value:
             words = text.split()
             return [" ".join(words[i:i + splitter_config.chunk_size]) for i in
                     range(0, len(words), splitter_config.chunk_size)]
-        elif splitter_config.split_type == "RecursiveCharacterTextSplitter":
+
+        elif splitter_config.split_type == SplitType.RECURSIVE.value:
+            """Split text into chunks of N characters."""
             text_splitter = RecursiveCharacterTextSplitter(
                 separators=splitter_config.separators,
                 chunk_size=splitter_config.chunk_size,
@@ -166,7 +179,8 @@ def split_text_by_words(text, splitter_config:SplitterConfig=None):
             )
             chunked_content = text_splitter.split_text(text)
             return chunked_content
-        elif splitter_config.split_type == "CharacterTextSplitter":
+        elif splitter_config.split_type == SplitType.CHARACTER.value:
+            """Split text into chunks of N characters."""
             text_splitter = CharacterTextSplitter(
                 separators=splitter_config.separators,
                 chunk_size=splitter_config.chunk_size,
@@ -175,6 +189,32 @@ def split_text_by_words(text, splitter_config:SplitterConfig=None):
             chunked_content = text_splitter.split_text(text)
             return chunked_content
 
+        elif splitter_config.split_type == SplitType.R_PRETRAINED_PROPOSITION.value:
+            indexer = PropositionalIndexer(model_name="gpt-4o-mini")
+
+            # Index directly from file
+            sentences = indexer.index_file_content(text, "propositional_index.txt")
+
+            # ✅ Combine all sentences into one big text
+            combined_text = " ".join(sentences)
+            # Initialize chunker once
+            chunker = RLChunker(device="cpu", embedding_dim=384)
+
+            # Chunk a single text
+
+            chunked_content = chunker.chunk_text(combined_text,min_len=splitter_config.min_rl_chunk_size,max_len=splitter_config.max_rl_chunk_size)
+
+            return chunked_content
+        elif splitter_config.split_type == SplitType.R_PRETRAINED.value:
+
+            # Initialize chunker once
+            chunker = RLChunker(device="cpu", embedding_dim=384)
+
+            # Chunk a single text
+
+            chunked_content = chunker.chunk_text(text,min_len=splitter_config.min_rl_chunk_size,max_len=splitter_config.max_rl_chunk_size)
+
+            return chunked_content
         else:
             words = text.split()
             return [" ".join(words[i:i + splitter_config.chunk_size]) for i in
@@ -213,18 +253,20 @@ def process_with_llm(chunk,instructions):
 
 def process_large_text(text, instructions,splitter_config:SplitterConfig=None):
     """Main function: split -> send to LLM -> collect results."""
-    chunks = split_text_by_words(text, splitter_config=splitter_config)
+    chunks = split_text_by_config(text, splitter_config=splitter_config)
     all_results = []
+    if splitter_config.enableLLMTouchUp:
+        for chunk in chunks:
+            structured = process_with_llm(chunk,instructions)
+            # Ensure UUIDs exist
+            for obj in structured:
+                if "id" not in obj:
+                    obj["id"] = str(uuid.uuid4())
+            all_results.extend(structured)
 
-    for chunk in chunks:
-        structured = process_with_llm(chunk,instructions)
-        # Ensure UUIDs exist
-        for obj in structured:
-            if "id" not in obj:
-                obj["id"] = str(uuid.uuid4())
-        all_results.extend(structured)
-
-    return all_results
+        return all_results
+    else:
+        return chunks
 
 
 

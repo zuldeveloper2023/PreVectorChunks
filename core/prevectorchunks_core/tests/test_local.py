@@ -31,11 +31,13 @@ def test_chunk_text_with_pretrained_model(sample_text):
     file_path = "content.txt"  # your text file path here
     with open(file_path, "r", encoding="utf-8") as f:
         text = f.read()
+    with open("content.txt", "rb") as f:
+        binary_data = f.read()
 
     indexer = PropositionalIndexer(model_name="gpt-4o-mini")
 
     # Index directly from file
-    sentences = indexer.index_file("content.txt", "propositional_index.txt")
+    sentences = indexer.index_file(binary_data, "propositional_index.txt",file_name="content.txt")
 
     # ✅ Combine all sentences into one big text
     combined_text = " ".join(sentences)

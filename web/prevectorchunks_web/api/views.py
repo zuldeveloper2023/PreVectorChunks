@@ -9,9 +9,9 @@ from django.http import JsonResponse, HttpResponse
 
 from pinecone import Pinecone, ServerlessSpec
 from dotenv import load_dotenv
+from prevectorchunks_core.services import chunk_documents_crud_vdb
 
 from core.prevectorchunks_core.config.splitter_config import SplitterConfig
-from core.prevectorchunks_core.services import chunk_documents_crud_vdb
 
 # create an index if not already existing
 load_dotenv(override=True)

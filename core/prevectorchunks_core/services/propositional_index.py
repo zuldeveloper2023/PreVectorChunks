@@ -4,6 +4,8 @@ A scalable LangChain-based propositional indexing pipeline.
 Uses LangChain Hub template "wfh/proposal-indexing" with batching support.
 """
 from dotenv import load_dotenv
+
+from ..utils.extract_content import extract_content_agnostic
 load_dotenv(override=True)# must come firs
 # t
 from langchain import hub
@@ -86,15 +88,24 @@ class PropositionalIndexer:
                 print(f"⚠️ Error on batch {i}: {e}")
         return all_sentences
 
-    def index_file(self, input_path: str, output_path: str) -> List[str]:
+    def index_file(self, input_path_or_binary, output_path: str,file_name=None) -> List[str]:
         """Run propositional indexing on a text file and save results"""
-        if not os.path.exists(input_path):
-            raise FileNotFoundError(f"Input file not found: {input_path}")
-
-        with open(input_path, "r", encoding="utf-8") as f:
-            text = f.read()
+        text=extract_content_agnostic(input_path_or_binary,file_name)
 
         sentences = self.index_text(text)
+
+        # Save to file
+        with open(output_path, "w", encoding="utf-8") as f:
+            for s in sentences:
+                f.write(s + "\n")
+
+        print(f"\n✅ Indexed {len(sentences)} sentences saved to {output_path}")
+        return sentences
+
+    def index_file_content(self, content, output_path: str) -> List[str]:
+        """Run propositional indexing on a text file and save results"""
+
+        sentences = self.index_text(content)
 
         # Save to file
         with open(output_path, "w", encoding="utf-8") as f:

@@ -1,6 +1,6 @@
 Australia is known for its stable democracy.
-Australia is known for its strong economy.
-Australia is known for its diverse cultural landscape.
+Australia has a strong economy.
+Australia has a diverse cultural landscape.
 In recent years, key national stories have focused on climate change.
 In recent years, key national stories have focused on indigenous rights.
 In recent years, key national stories have focused on economic growth.
@@ -23,9 +23,9 @@ Australia's foreign policy is increasingly focused on trade.
 Australia's foreign policy is increasingly focused on climate support.
 Australia's foreign policy is increasingly focused on security in the Indo-Pacific region.
 Australia celebrates its multicultural society.
-Australia's multicultural society includes contributions from European communities.
-Australia's multicultural society includes contributions from Asian communities.
-Australia's multicultural society includes contributions from Indigenous communities.
+Australia has contributions from European communities.
+Australia has contributions from Asian communities.
+Australia has contributions from Indigenous communities.
 Reconciliation with Aboriginal and Torres Strait Islander peoples remains a national priority in Australia.
 Discussions about constitutional recognition are ongoing in Australia.
 Discussions about treaty processes are ongoing in Australia.
@@ -44,22 +44,20 @@ Sports feature prominently in national life in Australia.
 Cricket unites communities in Australia.
 Australian Rules Football unites communities in Australia.
 Rugby unites communities in Australia.
+Sports shape national identity in Australia.
 International sporting events showcase Australia on the global stage.
-International sporting events include the Olympics.
-International sporting events include the Commonwealth Games.
 New Zealand is a nation renowned for its natural beauty.
 New Zealand is renowned for its environmental initiatives.
 New Zealand is renowned for its strong social policies.
 The New Zealand government has gained international recognition for climate action.
 The New Zealand government has gained international recognition for renewable energy investment.
-The New Zealand government has gained international recognition for conservation efforts.
-Conservation efforts protect native flora and fauna in New Zealand.
+The New Zealand government has gained international recognition for conservation efforts to protect native flora and fauna.
 National parks are central to New Zealand’s identity.
 Biodiversity programs are central to New Zealand’s tourism industry.
 The indigenous Māori population plays a vital role in shaping national culture in New Zealand.
 The indigenous Māori population plays a vital role in shaping national policy in New Zealand.
 Te Reo Māori language revitalization is an ongoing national story in New Zealand.
-Land rights settlements are an ongoing national story in New Zealand.
+Land rights settlements are ongoing national stories in New Zealand.
 Cultural preservation programs are ongoing national stories in New Zealand.
 Recent years have seen debates on equitable representation in New Zealand.
 Recent years have seen debates on social equity in New Zealand.
@@ -121,8 +119,8 @@ Environmental concerns are growing national stories.
 Environmental concerns include air pollution, water scarcity, and climate adaptation.
 India’s commitment to renewable energy is notable.
 India’s commitment to sustainable development is notable.
-India is particularly focused on solar energy projects.
-India is particularly focused on wind energy projects.
+India’s commitment to solar energy projects is notable.
+India’s commitment to wind energy projects is notable.
 Sports hold a unique place in national consciousness.
 Cricket holds a unique place in national consciousness.
 Success in international competitions fosters unity and pride.
@@ -160,7 +158,7 @@ Cultural diversity is celebrated through festivals in the Philippines.
 Cultural diversity is celebrated through music in the Philippines.
 Cultural diversity is celebrated through culinary traditions in the Philippines.
 Cultural diversity reflects the Philippines’ rich heritage.
-The Philippines’ strong diaspora has a major impact on national identity.
+The country’s strong diaspora has a major impact on national identity.
 Overseas workers contribute significantly to the economy of the Philippines.
 Migration patterns are ongoing national stories in the Philippines.
 Labor policies are ongoing national stories in the Philippines.
@@ -168,13 +166,13 @@ Bilateral agreements are ongoing national stories in the Philippines.
 Sports play a significant role in social cohesion in the Philippines.
 Basketball plays a significant role in social cohesion in the Philippines.
 Boxing plays a significant role in social cohesion in the Philippines.
-Sports contribute to international recognition in the Philippines.
+Sports play a significant role in international recognition in the Philippines.
 Arts shape cultural narratives in the Philippines.
 Literature shapes cultural narratives in the Philippines.
 Media shapes public discourse in the Philippines.
 The United Kingdom is composed of England, Scotland, Wales, and Northern Ireland.
 The United Kingdom has a long and complex history.
-The United Kingdom's history influences its current national stories.
+The long and complex history of the United Kingdom influences its current national stories.
 Political developments dominate the national narrative in the United Kingdom.
 Economic policy dominates the national narrative in the United Kingdom.
 International relations dominate the national narrative in the United Kingdom.
@@ -205,8 +203,8 @@ Cultural hubs attract tourism.
 Cultural hubs attract education.
 Cultural hubs attract global attention.
 Sports unite communities.
-Sports reinforce national identity.
 Sports include football, rugby, and cricket.
+Sports reinforce national identity.
 The UK maintains a role in diplomacy.
 The UK maintains a role in security.
 The UK maintains a role in trade.
@@ -219,8 +217,8 @@ Social equality initiatives are part of national debates.
 The UK grapples with regional identities.
 Regional identities include Scottish independence movements.
 Regional identities include Northern Ireland relations.
-Social cohesion is a central narrative.
-Multiculturalism is a central narrative.
-Economic disparities are a central narrative.
+Social cohesion remains a central narrative.
+Multiculturalism remains a central narrative.
+Economic disparities remain a central narrative.
 Central narratives influence political decision-making.
 Central narratives influence public discourse.
