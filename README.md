@@ -1,5 +1,5 @@
 # 📚 PreVectorChunks
-> AI Based light utility for document chunking is finally here!!
+
 > A lightweight utility for **document chunking** and **vector database upserts** — designed for developers building **RAG (Retrieval-Augmented Generation)** solutions.
 
 ---
@@ -14,7 +14,12 @@ Any developer working with:
 
 ## 🎯 What Does This Module Do?
 This module helps you:
-- **Chunk documents** into smaller fragments  
+- **Chunk documents** into smaller fragments using:
+  - a pretrained Reinforcement Learning based model or
+  - a pretrained Reinforcement Learning based model with proposition indexing or
+  - standard word chunking
+  - recursive character based chunking
+  - character based chunking
 - **Insert (upsert) fragments** into a vector database  
 - **Fetch & update** existing chunks from a vector database  
 
@@ -30,7 +35,7 @@ How to import in a file:
 from PreVectorChunks.services import chunk_documents_crud_vdb
 ```
 
-**Use .env for API keys:**
+**Use .env for API keys:IMPORTANT: PLEASE ENSURE TO PROVIDE YOUR OPENAI_API_KEY as MINIMUM in an .env file or as required**
 ```
 PINECONE_API_KEY=YOUR_API_KEY
 OPENAI_API_KEY=YOUR_API_KEY
@@ -44,16 +49,33 @@ OPENAI_API_KEY=YOUR_API_KEY
 ```python
 chunk_documents(instructions, file_path="content_playground/content.json", splitter_config=SplitterConfig())
 ```
-Splits the content of a document into smaller, manageable chunks.
+Splits the content of a document into smaller, manageable chunks. - Five types of document chunking
+- Chunking using Reinforcement Learning based pretrained model +(enable/disable LLM to structure the chunked text - default is enabled)
+- Chunking using Reinforcement Learning based pretrained model and proposition indexing +(enable/disable LLM to structure the chunked text - default is enabled)
+- Recursive Character based chunking +(enable/disable LLM to structure the chunked text - default is enabled)
+- Standard word based chunking+(enable/disable LLM to structure the chunked text - default is enabled)
+- Simple character based chunking +(enable/disable LLM to structure the chunked text - default is enabled)
+
 
 **Parameters**
 - `instructions` (*dict or str*): Additional rules or guidance for how the document should be split.  
   - Example: `"split my content by biggest headings"`
-- `file_path` (*str*): Path to the input JSON/text file containing the content or content of the file. Default: `"content_playground/content.json"`.
+- `file_path` (*str*): Binary file or file path to the input file containing the content or content of the file. Default: `"content_playground/content.json"`.
 - `splitter_config (optional) ` (*SplitterConfig*): (if none provided standard split takes place) Object that defines chunking behavior, e.g., `chunk_size`, `chunk_overlap`, `separator`, `split_type`.
-- i.e. splitter_config = SplitterConfig(chunk_size= 300, chunk_overlap= 0,separators=["\n"],split_type="RecursiveCharacterTextSplitter")
-- i.e. splitter_config = SplitterConfig(chunk_size= 300, chunk_overlap= 0,separators=["\n"],split_type="CharacterTextSplitter")
-- i.e. splitter_config = SplitterConfig(chunk_size= 300, chunk_overlap= 0,separators=["\n"],split_type="standard")
+- i.e. splitter_config = SplitterConfig(chunk_size= 300, chunk_overlap= 0,separators=["\n"],split_type=SplitType.RECURSIVE.value)
+- (chunk_size refers to size in characters (i.e. 100 characters) when RECURSIVE is used)
+- i.e. splitter_config = SplitterConfig(chunk_size= 300, chunk_overlap= 0,separators=["\n"],split_type=SplitType.CHARACTER.value)
+- - (chunk_size refers to size in characters (i.e. 100 characters) when CHARACTER is used)
+- i.e. splitter_config = SplitterConfig(chunk_size= 300, chunk_overlap= 0,separators=["\n"],split_type=SplitType.STANDARD.value)
+- - (chunk_size refers to size in words (i.e. 100 characters) when STANDARD is used)
+- i.e. splitter_config = SplitterConfig(separators=["\n"],
+                                     split_type=SplitType.R_PRETRAINED.value, min_rl_chunk_size=5,
+                                     max_rl_chunk_size=50,enableLLMTouchUp=False)
+- - (min_rl_chunk_size and max_rl_chunk_size refers to size in sentences (i.e. 100 sentences) when R_PRETRAINED is used)
+- i.e. splitter_config = SplitterConfig(separators=["\n"],
+                                     split_type=SplitType.R_PRETRAINED_PROPOSITION.value, min_rl_chunk_size=5,
+                                     max_rl_chunk_size=50,enableLLMTouchUp=False)
+- - (min_rl_chunk_size and max_rl_chunk_size refers to size in sentences (i.e. 100 sentences) when R_PRETRAINED_PROPOSITION is used)
 **Returns**
 - A list of chunked strings including a unique id, a meaningful title and chunked text
 
@@ -126,7 +148,7 @@ Updates existing chunks in the Vector Database by document name.
 ```python
 from prevectorchunks_core.config import SplitterConfig
 
-splitter_config = SplitterConfig(chunk_size=150, chunk_overlap=0, separator=["\n"], split_type="RecursiveCharacterTextSplitter")
+splitter_config = SplitterConfig(chunk_size=150, chunk_overlap=0, separator=["\n"], split_type=SplitType.R_PRETRAINED_PROPOSITION.value)
 
 # Step 1: Chunk a document
 chunks = chunk_documents(
@@ -134,6 +156,12 @@ chunks = chunk_documents(
     file_path="content_playground/content.json",
     splitter_config=splitter_config
 )
+
+splitter_config = SplitterConfig(chunk_size=300, chunk_overlap=0, separators=["\n"],
+                                     split_type=SplitType.R_PRETRAINED_PROPOSITION.value, min_rl_chunk_size=5,
+                                     max_rl_chunk_size=50,enableLLMTouchUp=False)
+
+chunks=chunk_documents_crud_vdb.chunk_documents("extract", file_name=None, file_path="content.txt",splitter_config=splitter_config)
 
 # Step 2: Insert chunks into VDB
 chunk_and_upsert_to_vdb("my_index", instructions="split by headings", splitter_config=splitter_config)
