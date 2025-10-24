@@ -1,6 +1,6 @@
 Australia is known for its stable democracy.
-Australia has a strong economy.
-Australia has a diverse cultural landscape.
+Australia is known for its strong economy.
+Australia is known for its diverse cultural landscape.
 In recent years, key national stories have focused on climate change.
 In recent years, key national stories have focused on indigenous rights.
 In recent years, key national stories have focused on economic growth.
@@ -23,9 +23,9 @@ Australia's foreign policy is increasingly focused on trade.
 Australia's foreign policy is increasingly focused on climate support.
 Australia's foreign policy is increasingly focused on security in the Indo-Pacific region.
 Australia celebrates its multicultural society.
-Australia has contributions from European communities.
-Australia has contributions from Asian communities.
-Australia has contributions from Indigenous communities.
+Australia's multicultural society includes contributions from European communities.
+Australia's multicultural society includes contributions from Asian communities.
+Australia's multicultural society includes contributions from Indigenous communities.
 Reconciliation with Aboriginal and Torres Strait Islander peoples remains a national priority in Australia.
 Discussions about constitutional recognition are ongoing in Australia.
 Discussions about treaty processes are ongoing in Australia.
@@ -44,8 +44,9 @@ Sports feature prominently in national life in Australia.
 Cricket unites communities in Australia.
 Australian Rules Football unites communities in Australia.
 Rugby unites communities in Australia.
-Sports shape national identity in Australia.
 International sporting events showcase Australia on the global stage.
+The Olympics showcase Australia on the global stage.
+The Commonwealth Games showcase Australia on the global stage.
 New Zealand is a nation renowned for its natural beauty.
 New Zealand is renowned for its environmental initiatives.
 New Zealand is renowned for its strong social policies.
@@ -57,7 +58,7 @@ Biodiversity programs are central to New Zealand’s tourism industry.
 The indigenous Māori population plays a vital role in shaping national culture in New Zealand.
 The indigenous Māori population plays a vital role in shaping national policy in New Zealand.
 Te Reo Māori language revitalization is an ongoing national story in New Zealand.
-Land rights settlements are ongoing national stories in New Zealand.
+Land rights settlements are an ongoing national story in New Zealand.
 Cultural preservation programs are ongoing national stories in New Zealand.
 Recent years have seen debates on equitable representation in New Zealand.
 Recent years have seen debates on social equity in New Zealand.
@@ -109,31 +110,32 @@ Relations with neighboring countries shape national narratives.
 Relations with global powers shape national narratives.
 Defense modernization remains high on the agenda.
 Technological innovation remains high on the agenda.
-Social issues are central to national discourse.
-Social issues include education, healthcare, gender equality, and poverty alleviation.
-Urbanization poses opportunities and challenges.
-Migration poses opportunities and challenges.
+Social issues, including education, healthcare, gender equality, and poverty alleviation, are central to national discourse.
+Urbanization poses opportunities for India.
+Urbanization poses challenges for India.
+Migration poses opportunities for India.
+Migration poses challenges for India.
 India’s cultural richness is reflected in festivals, cinema, literature, and music.
-Festivals, cinema, literature, and music resonate both domestically and internationally.
-Environmental concerns are growing national stories.
-Environmental concerns include air pollution, water scarcity, and climate adaptation.
+India’s cultural richness resonates both domestically and internationally.
+Environmental concerns, such as air pollution, water scarcity, and climate adaptation, are growing national stories.
 India’s commitment to renewable energy is notable.
 India’s commitment to sustainable development is notable.
 India’s commitment to solar energy projects is notable.
 India’s commitment to wind energy projects is notable.
-Sports hold a unique place in national consciousness.
-Cricket holds a unique place in national consciousness.
-Success in international competitions fosters unity and pride.
-Traditional sports contribute to a dynamic sporting culture.
-Modern professional leagues contribute to a dynamic sporting culture.
+Sports, especially cricket, hold a unique place in national consciousness.
+Success in international competitions fosters unity and pride in India.
+Traditional sports contribute to a dynamic sporting culture in India.
+Modern professional leagues contribute to a dynamic sporting culture in India.
 The Philippines is an archipelagic nation in Southeast Asia.
 The Philippines is known for its vibrant culture.
 The Philippines is known for its economic growth.
 The Philippines is known for its social resilience.
-National stories in the Philippines often revolve around governance, economic development, natural disasters, and overseas labor migration.
-Typhoons frequently shape national policies on disaster preparedness.
-Earthquakes frequently shape national policies on disaster preparedness.
-Earthquakes frequently shape national policies on climate resilience.
+National stories in the Philippines often revolve around governance.
+National stories in the Philippines often revolve around economic development.
+National stories in the Philippines often revolve around natural disasters.
+National stories in the Philippines often revolve around overseas labor migration.
+Typhoons frequently shape national policies on disaster preparedness in the Philippines.
+Earthquakes frequently shape national policies on climate resilience in the Philippines.
 Politically, the Philippines operates as a presidential republic.
 Governance is an ongoing concern in the Philippines.
 Anti-corruption efforts are ongoing concerns in the Philippines.
@@ -142,31 +144,27 @@ National debates around human rights are significant in the Philippines.
 National debates around social policies are significant in the Philippines.
 Regional security is significant in the Philippines.
 Relationships with neighboring Southeast Asian countries are significant in the Philippines.
-The Philippines has experienced consistent economic growth.
-Economic growth in the Philippines is driven by remittances from overseas Filipino workers.
-Economic growth in the Philippines is driven by business process outsourcing.
-Economic growth in the Philippines is driven by a growing services sector.
+Economically, the Philippines has experienced consistent growth.
+Remittances from overseas Filipino workers drive economic growth in the Philippines.
+Business process outsourcing drives economic growth in the Philippines.
+A growing services sector drives economic growth in the Philippines.
 Infrastructure development is a key national narrative in the Philippines.
 Urbanization is a key national narrative in the Philippines.
 Digital transformation is a key national narrative in the Philippines.
-Social issues remain central to policymaking in the Philippines.
-Social issues include poverty reduction, education, healthcare, and gender equality.
+Social issues, including poverty reduction, education, healthcare, and gender equality, remain central to policymaking in the Philippines.
 Indigenous communities are often the focus of social programs in the Philippines.
 Rural populations are often the focus of social programs in the Philippines.
 Urban poor are often the focus of social programs in the Philippines.
 Cultural diversity is celebrated through festivals in the Philippines.
 Cultural diversity is celebrated through music in the Philippines.
 Cultural diversity is celebrated through culinary traditions in the Philippines.
-Cultural diversity reflects the Philippines’ rich heritage.
-The country’s strong diaspora has a major impact on national identity.
+The Philippines’ strong diaspora has a major impact on national identity.
 Overseas workers contribute significantly to the economy of the Philippines.
 Migration patterns are ongoing national stories in the Philippines.
 Labor policies are ongoing national stories in the Philippines.
 Bilateral agreements are ongoing national stories in the Philippines.
-Sports play a significant role in social cohesion in the Philippines.
-Basketball plays a significant role in social cohesion in the Philippines.
-Boxing plays a significant role in social cohesion in the Philippines.
-Sports play a significant role in international recognition in the Philippines.
+Sports, especially basketball and boxing, play a significant role in social cohesion in the Philippines.
+Sports, especially basketball and boxing, play a significant role in international recognition for the Philippines.
 Arts shape cultural narratives in the Philippines.
 Literature shapes cultural narratives in the Philippines.
 Media shapes public discourse in the Philippines.
@@ -177,9 +175,9 @@ Political developments dominate the national narrative in the United Kingdom.
 Economic policy dominates the national narrative in the United Kingdom.
 International relations dominate the national narrative in the United Kingdom.
 Social issues dominate the national narrative in the United Kingdom.
-Brexit has been a defining event in the United Kingdom.
-Brexit shapes trade in the United Kingdom.
-Brexit shapes immigration in the United Kingdom.
+Brexit has been a defining event for the United Kingdom.
+Brexit shapes trade policy in the United Kingdom.
+Brexit shapes immigration policy in the United Kingdom.
 Brexit shapes regulatory policy in the United Kingdom.
 Economic adjustments continue to be central to UK national life.
 Trade negotiations continue to be central to UK national life.
@@ -203,8 +201,8 @@ Cultural hubs attract tourism.
 Cultural hubs attract education.
 Cultural hubs attract global attention.
 Sports unite communities.
-Sports include football, rugby, and cricket.
 Sports reinforce national identity.
+Sports include football, rugby, and cricket.
 The UK maintains a role in diplomacy.
 The UK maintains a role in security.
 The UK maintains a role in trade.
@@ -217,8 +215,8 @@ Social equality initiatives are part of national debates.
 The UK grapples with regional identities.
 Regional identities include Scottish independence movements.
 Regional identities include Northern Ireland relations.
-Social cohesion remains a central narrative.
-Multiculturalism remains a central narrative.
-Economic disparities remain a central narrative.
+Social cohesion is a central narrative in the UK.
+Multiculturalism is a central narrative in the UK.
+Economic disparities are a central narrative in the UK.
 Central narratives influence political decision-making.
 Central narratives influence public discourse.

@@ -18,8 +18,8 @@ def temp_json_file(tmp_path):
 
 def test_load_file_and_upsert_chunks_to_vdb(temp_json_file):
     splitter_config = SplitterConfig(chunk_size=300, chunk_overlap=0, separators=["\n"],
-                                     split_type=SplitType.R_PRETRAINED_PROPOSITION.value, min_rl_chunk_size=5,
-                                     max_rl_chunk_size=50,enableLLMTouchUp=False)
+                                     split_type=SplitType.RECURSIVE.value, min_rl_chunk_size=5,
+                                     max_rl_chunk_size=50,enableLLMTouchUp=True)
 
     chunks=chunk_documents_crud_vdb.chunk_documents("extract", file_name=None, file_path="content.txt",splitter_config=splitter_config)
 
