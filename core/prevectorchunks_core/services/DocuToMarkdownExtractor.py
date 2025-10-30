@@ -93,13 +93,26 @@ if __name__ == "__main__":
     cm= ChunkMapper(chunk_client,markdown_output,embedding_model="text-embedding-3-small")
     splitter_config = SplitterConfig(chunk_size=300, chunk_overlap=0, separators=["\n"],
                                      split_type=SplitType.R_PRETRAINED_PROPOSITION.value, min_rl_chunk_size=5,
-                                     max_rl_chunk_size=50, enableLLMTouchUp=True)
+                                     max_rl_chunk_size=50, enableLLMTouchUp=False)
 
 
 
     chunked_text=chunk_documents("",file_name="install_ins.txt",file_path=binary_text_content,splitter_config=splitter_config)
-    flat_chunks = [item for sublist in chunked_text for item in sublist]
+
+    flat_chunks = result = [''.join(inner) for inner in chunked_text]
     mapped_chunks=cm.map_chunks(flat_chunks)
+    for md_item in markdown_output:
+        # Check if this markdown_output item is already present in mapped_chunks
+        match_found = False
+        for mapped in mapped_chunks:
+            if mapped.get("markdown_text") == md_item.get("markdown_text"):
+                match_found = True
+                break
+
+        # If not found, append the missing markdown_output item
+        if not match_found:
+            md_item["chunked_text"] = md_item["markdown_text"]
+            mapped_chunks.append(md_item)
     print(mapped_chunks)
 
     print("✅ Markdown extraction complete! See output.md")
