@@ -6,12 +6,14 @@ import base64
 from openai import OpenAI
 from PIL import Image
 
+from core.prevectorchunks_core.config.splitter_config import SplitterConfig
 from core.prevectorchunks_core.services.DocuToImageConverter import DocuToImageConverter
 from dotenv import load_dotenv
 
 from core.prevectorchunks_core.services.chunk_documents_crud_vdb import chunk_documents
 from core.prevectorchunks_core.services.chunk_to_all_content_mapper import ChunkMapper
 from core.prevectorchunks_core.services.image_processor import ImageProcessor
+from core.prevectorchunks_core.utils.file_loader import SplitType
 
 load_dotenv(override=True)
 
@@ -84,14 +86,20 @@ if __name__ == "__main__":
     # Step 2: Extract Markdown from images
     markdown_output,text_content = extractor.extract_markdown(images,include_image=False)
     # convert text content to binary
-    b = text_content.encode('utf-8')  # bytes representation
-    binary_text_content = ''.join(format(byte, '08b') for byte in b)
+    binary_text_content= text_content.encode('utf-8')  # bytes representation
+
 
     chunk_client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
     cm= ChunkMapper(chunk_client,markdown_output,embedding_model="text-embedding-3-small")
+    splitter_config = SplitterConfig(chunk_size=300, chunk_overlap=0, separators=["\n"],
+                                     split_type=SplitType.R_PRETRAINED_PROPOSITION.value, min_rl_chunk_size=5,
+                                     max_rl_chunk_size=50, enableLLMTouchUp=True)
 
-    chunked_text=chunk_documents("",file_name="install_ins",file_path=binary_text_content)
-    cm.map_chunks()
-    print(markdown_output)
+
+
+    chunked_text=chunk_documents("",file_name="install_ins.txt",file_path=binary_text_content,splitter_config=splitter_config)
+    flat_chunks = [item for sublist in chunked_text for item in sublist]
+    mapped_chunks=cm.map_chunks(flat_chunks)
+    print(mapped_chunks)
 
     print("✅ Markdown extraction complete! See output.md")
