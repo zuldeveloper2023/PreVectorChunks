@@ -32,7 +32,13 @@ dependencies = [
     "py-gutenberg~=1.0.3",
     "langchain-text-splitters~=0.3.11",  # <-- add this
     "langchain~=0.3",
-    "langchain_openai~=0.3.35"
+    "langchain_openai~=0.3.35",
+     # … your existing dependencies …
+    "transformers>=4.30.0",
+    "accelerate>=0.22.0",
+    "imageio-ffmpeg>=0.4.8",
+    "opencv-python>=4.10.0",       # for frame extraction
+          # or whichever version of LLaVA you use
 ]
 
 [tool.setuptools.packages.find]

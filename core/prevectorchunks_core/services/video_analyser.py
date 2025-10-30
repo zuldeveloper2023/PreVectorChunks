@@ -156,7 +156,7 @@ class VideoAnalyzer:
         final_summary = response.choices[0].message.content
         print("✅ Final video summary generated.")
         return final_summary
-    
+
 
 
 # ---------------------------------------------------
