@@ -143,6 +143,41 @@ Updates existing chunks in the Vector Database by document name.
 - Re-ingesting revised or corrected content
 
 ---
+### 5. ``markdown_and_chunk_documents``
+```python
+from prevectorchunks_core.services.markdown_and_chunk_documents import MarkdownAndChunkDocuments
+
+markdown_processor = MarkdownAndChunkDocuments()
+mapped_chunks = markdown_processor.markdown_and_chunk_documents("example.pdf")
+```
+
+**Description**  
+This new function automatically:
+1. Converts a document (PDF, DOCX, etc.) into images using `DocuToImageConverter`.
+2. Extracts **Markdown and text** content from those images using `DocuToMarkdownExtractor` (powered by GPT).
+3. Converts the extracted markdown text into **RL-based chunks** using `ChunkMapper` and `chunk_documents`.
+4. Merges unmatched markdown segments into the final structured output.
+
+**Parameters**
+- `file_path` (*str*): Path to the document (PDF, DOCX, or image) you want to process.
+
+**Returns**
+- `mapped_chunks` (*list[dict]*): A list of markdown-based chunks with both markdown and chunked text content.
+
+**Example**
+```python
+if __name__ == "__main__":
+    markdown_processor = MarkdownAndChunkDocuments()
+    mapped_chunks = markdown_processor.markdown_and_chunk_documents("421307-nz-au-top-loading-washer-guide-shorter.pdf")
+    print(mapped_chunks)
+```
+
+**Use Cases**
+- End-to-end document-to-markdown-to-chunks pipeline
+- Automating preprocessing for RAG/LLM ingestion
+- Extracting structured markdown for semantic search or content indexing
+
+---
 
 ## 🚀 Example Workflow
 ```python
