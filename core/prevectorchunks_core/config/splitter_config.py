@@ -1,5 +1,14 @@
 # prevectorchunks_core/config.py
 from dataclasses import dataclass, field
+from enum import Enum
+
+
+class LLM_Structured__Output_Type(Enum):
+    RECURSIVE = "RecursiveCharacterTextSplitter"
+    CHARACTER = "CharacterTextSplitter"
+    STANDARD = "standard"
+    R_PRETRAINED_PROPOSITION = "RLBasedTextSplitterWithProposition"
+    R_PRETRAINED = "RLBasedTextSplitter"
 
 @dataclass()
 class SplitterConfig:
