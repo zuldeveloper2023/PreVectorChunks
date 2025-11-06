@@ -3,12 +3,10 @@ from dataclasses import dataclass, field
 from enum import Enum
 
 
-class LLM_Structured__Output_Type(Enum):
-    RECURSIVE = "RecursiveCharacterTextSplitter"
-    CHARACTER = "CharacterTextSplitter"
-    STANDARD = "standard"
-    R_PRETRAINED_PROPOSITION = "RLBasedTextSplitterWithProposition"
-    R_PRETRAINED = "RLBasedTextSplitter"
+class LLM_Structured_Output_Type(Enum):
+    STANDARD = "STANDARD"
+    STRUCTURED_WITH_VECTOR_DB_ID_GENERATED = "STRUCTURED_WITH_VECTOR_DB_ID_GENERATED"
+
 
 @dataclass()
 class SplitterConfig:
@@ -17,6 +15,7 @@ class SplitterConfig:
     separators: list[str] = field(default_factory=lambda: ["\n"])
     split_type: str = "recursive_splitter"
     enableLLMTouchUp: bool = True
+    llm_structured_output_type: LLM_Structured_Output_Type = LLM_Structured_Output_Type.STRUCTURED_WITH_VECTOR_DB_ID_GENERATED
     min_rl_chunk_size: int = 5
     max_rl_chunk_size: int = 50
 

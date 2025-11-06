@@ -16,7 +16,7 @@ from .llm_wrapper import LLMClientWrapper  # Relative import
 from dotenv import load_dotenv
 import tempfile
 
-from ..config.splitter_config import SplitterConfig
+from ..config.splitter_config import SplitterConfig, LLM_Structured_Output_Type
 from ..rlchunker.inference import RLChunker
 from ..services.propositional_index import PropositionalIndexer
 
@@ -256,15 +256,19 @@ def process_large_text(text, instructions,splitter_config:SplitterConfig=None):
     chunks = split_text_by_config(text, splitter_config=splitter_config)
     all_results = []
     if splitter_config.enableLLMTouchUp:
-        for chunk in chunks:
-            structured = process_with_llm(chunk,instructions)
-            # Ensure UUIDs exist
-            for obj in structured:
-                if "id" not in obj:
-                    obj["id"] = str(uuid.uuid4())
-            all_results.extend(structured)
+        if splitter_config.llm_structured_output_type == LLM_Structured_Output_Type.STANDARD:
+            warnings.warn("bypassing LLM touch up for standard structured output")
+            return chunks
+        elif splitter_config.llm_structured_output_type == LLM_Structured_Output_Type.STRUCTURED_WITH_VECTOR_DB_ID_GENERATED:
+            for chunk in chunks:
+                structured = process_with_llm(chunk,instructions)
+                # Ensure UUIDs exist
+                for obj in structured:
+                    if "id" not in obj:
+                        obj["id"] = str(uuid.uuid4())
+                all_results.extend(structured)
 
-        return all_results
+            return all_results
     else:
         return chunks
 

@@ -4,17 +4,17 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "prevectorchunks-core"
-version = "0.1.26"
+version = "0.1.28"
 description = "A Python module that allows conversion of a document into chunks to be inserted into Pinecone vector database"
 readme = "README.md"
 license = { file = "LICENSE" }
+requires-python = ">=3.7,<3.12"
 authors = [
     { name = "Zul Al-Kabir", email = "zul.developer.2023@gmail.com" }
 ]
 
 dependencies = [
     "packaging~=24.1",
-    "requests~=2.32.3",
     "openai>=2.6.0,<3.0.0",
     "python-dotenv~=1.0.1",
     "PyJWT~=2.7.0",
@@ -30,15 +30,10 @@ dependencies = [
     "torchaudio~=2.6.0",
     "sentence-transformers~=5.1.1",
     "py-gutenberg~=1.0.3",
-    "langchain-text-splitters~=0.3.11", # <-- add this
+    "langchain-text-splitters~=0.3.11",
     "langchain~=0.3",
     "langchain_openai~=0.3.35",
-    # … your existing dependencies …
-    "transformers>=4.30.0",
     "accelerate>=0.22.0",
-    "imageio-ffmpeg>=0.4.8",
-    "opencv-python>=4.10.0", # for frame extraction
-    # or whichever version of LLaVA you use
     "pathlib~=1.0.1",
     "transformers~=4.57.0",
     "imageio-ffmpeg~=0.6.0",
@@ -49,17 +44,24 @@ dependencies = [
     "docx2pdf~=0.1.8",
     "numpy~=2.2.6",
     "scikit-learn~=1.7.2",
-    "PyMuPDF~=1.22.5"
+    "PyMuPDF~=1.22.5",
+    "pypandoc~=1.13",
+    "reportlab~=4.1.0",
+    "weasyprint~=62.0",
+    "lxml~=4.9.3",
+    "cssselect2~=0.7.0",
+    "cairocffi~=1.4.0"
 ]
 
 [tool.setuptools.packages.find]
 include = ["prevectorchunks_core*"]
+
 [tool.setuptools.package-data]
 "prevectorchunks_core.rlchunker.pretrained" = ["*.pt", "*.txt"]
 
 [tool.setuptools]
 include-package-data = true
+
 [project.urls]
 Homepage = "https://github.com/zuldeveloper2023/PreVectorChunks"
 Source = "https://github.com/zuldeveloper2023/PreVectorChunks"
-

@@ -76,7 +76,8 @@ Splits the content of a document into smaller, manageable chunks. - Five types o
                                      split_type=SplitType.R_PRETRAINED_PROPOSITION.value, min_rl_chunk_size=5,
                                      max_rl_chunk_size=50,enableLLMTouchUp=False)
 - - (min_rl_chunk_size and max_rl_chunk_size refers to size in sentences (i.e. 100 sentences) when R_PRETRAINED_PROPOSITION is used)
-**Returns**
+
+- **Returns**
 - A list of chunked strings including a unique id, a meaningful title and chunked text
 
 **Use Cases**

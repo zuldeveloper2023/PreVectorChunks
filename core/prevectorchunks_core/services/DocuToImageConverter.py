@@ -1,11 +1,21 @@
 import os
+import shutil
+import subprocess
+import sys
 import tempfile
+from pathlib import Path
+
+import pypandoc
 from PIL import Image
 import io
 from docx2pdf import convert as docx_to_pdf
 import fitz
-
-
+from docx2pdf import convert as docx2pdf_convert
+try:
+    pypandoc.get_pandoc_path()
+except OSError:
+    print("Pandoc not found — downloading it temporarily...")
+    pypandoc.download_pandoc()
 
 class DocuToImageConverter:
     """Converts a document (PDF, DOCX, DOC) into a list of PIL images."""
@@ -13,11 +23,75 @@ class DocuToImageConverter:
     def __init__(self):
         pass
 
-    def _convert_doc_to_pdf(self, doc_path: str) -> str:
-        """Converts a .docx or .doc file to PDF using docx2pdf."""
-        temp_dir = tempfile.mkdtemp()
-        output_pdf = os.path.join(temp_dir, "converted.pdf")
-        docx_to_pdf(doc_path, output_pdf)
+    def _convert_doc_to_pdf(self, input_path: str) -> str:
+        import os, tempfile, shutil, subprocess
+        from pathlib import Path
+
+        if not os.path.exists(input_path):
+            raise FileNotFoundError(input_path)
+
+        output_dir = tempfile.mkdtemp()
+        output_pdf = os.path.join(output_dir, Path(input_path).stem + ".pdf")
+
+        # 1️⃣ Try Microsoft Word COM automation (Windows only)
+        try:
+            import win32com.client
+            word = win32com.client.Dispatch("Word.Application")
+            word.Visible = False
+            doc = word.Documents.Open(str(Path(input_path).resolve()))
+            doc.SaveAs(str(Path(output_pdf).resolve()), FileFormat=17)  # 17 = wdFormatPDF
+            doc.Close()
+            word.Quit()
+            print("✅ Word COM conversion successful:", output_pdf)
+            return output_pdf
+        except Exception as e:
+            print("⚠️ Word COM conversion failed:", e)
+
+        # 2️⃣ Fallback: LibreOffice (cross-platform, preserves layout)
+        try:
+            # Requires LibreOffice installed and in PATH
+            subprocess.run(
+                ["soffice", "--headless", "--convert-to", "pdf", "--outdir", output_dir, input_path],
+                check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE
+            )
+            print("✅ LibreOffice conversion successful:", output_pdf)
+            return output_pdf
+        except Exception as e:
+            print("⚠️ LibreOffice conversion failed:", e)
+
+        # 3️⃣ Fallback: Pandoc (simpler, loses layout)
+        try:
+            import pypandoc
+            def which(cmd):
+                return shutil.which(cmd) is not None
+
+            pdf_engine = "pdflatex" if which("pdflatex") else "wkhtmltopdf"
+            pypandoc.convert_file(
+                input_path, "pdf", outputfile=output_pdf,
+                extra_args=["--standalone", f"--pdf-engine={pdf_engine}"]
+            )
+            print("✅ Pandoc conversion successful:", output_pdf)
+            return output_pdf
+        except Exception as e:
+            print("⚠️ Pandoc conversion failed:", e)
+
+        # 4️⃣ Last resort: ReportLab basic text (no formatting)
+        from reportlab.pdfgen import canvas
+        from reportlab.lib.pagesizes import A4
+        from docx import Document
+
+        doc = Document(input_path)
+        c = canvas.Canvas(output_pdf, pagesize=A4)
+        width, height = A4
+        y = height - 50
+        for p in doc.paragraphs:
+            c.drawString(50, y, p.text[:1000])
+            y -= 15
+            if y < 50:
+                c.showPage()
+                y = height - 50
+        c.save()
+        print("⚠️ Fallback to plain ReportLab text output:", output_pdf)
         return output_pdf
 
     def _convert_pdf_to_images(self, pdf_path: str, dpi: int = 200):

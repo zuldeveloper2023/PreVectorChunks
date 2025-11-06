@@ -42,12 +42,12 @@ class DocuToMarkdownExtractor:
             fins = [{"type": "text", "text": "You are a document parser. Extract all text and tables "
                                              "from this image and format the output in clean Markdown. "
                                              "Preserve table structure, headings, and lists. If there is no markdown, put a space. "
-                                             "Put your result in a JSON object with the following keys:\n"
-                                             "- markdown_text: the markdown text\n"
-                                             "- short_title: the short title of the document\n"
-                                             "- page_number: the page number of the document (image index + 1)\n"
-                                             "- summary: a summary of the document\n,"
-                                             " - image_data: the image data in base64 format\n,"
+                                             "Put your result in a JSON object with the following keys:"
+                                             "- markdown_text: the markdown text"
+                                             "- short_title: the short title of the document"
+                                             "- page_number: the page number of the document (i+1)"
+                                             "- summary: a summary of the document,"
+                                             " - image_data: the image data in base64 format,"
                                              "Return only raw JSON, without markdown formatting or triple backticks."
                                              "- image_index: the index of the image in the document"},
                     {"type": "text", "text": "You are an image inspector. Tell us what is in the image "
@@ -63,6 +63,9 @@ class DocuToMarkdownExtractor:
             text_content=text_content+"\n"+response["markdown_text"]
             if(include_image):
                 response["image_data"]=b64_image
+            response["image_index"]=i
+            response["page_number"] = i
+
             all_outputs.append(response)
 
         json_array = json.dumps(all_outputs, indent=2)
