@@ -1,85 +1,77 @@
 import os
+import tempfile
 import shutil
 import subprocess
-import sys
-import tempfile
 from pathlib import Path
-
-import pypandoc
 from PIL import Image
 import io
-from docx2pdf import convert as docx_to_pdf
 import fitz
 from docx2pdf import convert as docx2pdf_convert
+from docx import Document
+from reportlab.pdfgen import canvas
+from reportlab.lib.pagesizes import A4
+import pypandoc
+
+# Ensure pandoc is available
 try:
     pypandoc.get_pandoc_path()
 except OSError:
-    print("Pandoc not found — downloading it temporarily...")
     pypandoc.download_pandoc()
 
 class DocuToImageConverter:
-    """Converts a document (PDF, DOCX, DOC) into a list of PIL images."""
+    """Converts a document (PDF, DOCX, DOC, image bytes) into a list of PIL images."""
 
     def __init__(self):
         pass
 
-    def _convert_doc_to_pdf(self, input_path: str) -> str:
-        import os, tempfile, shutil, subprocess
-        from pathlib import Path
+    def _write_temp_file(self, input_bytes: bytes, suffix: str):
+        """Write bytes to a temporary file and return path."""
+        tmp_fd, tmp_path = tempfile.mkstemp(suffix=suffix)
+        with os.fdopen(tmp_fd, "wb") as f:
+            f.write(input_bytes)
+        return tmp_path
 
+    def _convert_doc_to_pdf(self, input_path: str) -> str:
+        """Convert DOC/DOCX file to PDF using Word COM, LibreOffice, Pandoc, or fallback."""
         if not os.path.exists(input_path):
             raise FileNotFoundError(input_path)
 
         output_dir = tempfile.mkdtemp()
         output_pdf = os.path.join(output_dir, Path(input_path).stem + ".pdf")
 
-        # 1️⃣ Try Microsoft Word COM automation (Windows only)
+        # 1️⃣ Microsoft Word COM automation (Windows only)
         try:
             import win32com.client
             word = win32com.client.Dispatch("Word.Application")
             word.Visible = False
             doc = word.Documents.Open(str(Path(input_path).resolve()))
-            doc.SaveAs(str(Path(output_pdf).resolve()), FileFormat=17)  # 17 = wdFormatPDF
+            doc.SaveAs(str(Path(output_pdf).resolve()), FileFormat=17)
             doc.Close()
             word.Quit()
-            print("✅ Word COM conversion successful:", output_pdf)
             return output_pdf
-        except Exception as e:
-            print("⚠️ Word COM conversion failed:", e)
+        except Exception:
+            pass
 
-        # 2️⃣ Fallback: LibreOffice (cross-platform, preserves layout)
+        # 2️⃣ LibreOffice fallback
         try:
-            # Requires LibreOffice installed and in PATH
             subprocess.run(
                 ["soffice", "--headless", "--convert-to", "pdf", "--outdir", output_dir, input_path],
                 check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE
             )
-            print("✅ LibreOffice conversion successful:", output_pdf)
             return output_pdf
-        except Exception as e:
-            print("⚠️ LibreOffice conversion failed:", e)
+        except Exception:
+            pass
 
-        # 3️⃣ Fallback: Pandoc (simpler, loses layout)
+        # 3️⃣ Pandoc fallback
         try:
-            import pypandoc
-            def which(cmd):
-                return shutil.which(cmd) is not None
-
-            pdf_engine = "pdflatex" if which("pdflatex") else "wkhtmltopdf"
-            pypandoc.convert_file(
-                input_path, "pdf", outputfile=output_pdf,
-                extra_args=["--standalone", f"--pdf-engine={pdf_engine}"]
-            )
-            print("✅ Pandoc conversion successful:", output_pdf)
+            pdf_engine = "pdflatex" if shutil.which("pdflatex") else "wkhtmltopdf"
+            pypandoc.convert_file(input_path, "pdf", outputfile=output_pdf,
+                                  extra_args=["--standalone", f"--pdf-engine={pdf_engine}"])
             return output_pdf
-        except Exception as e:
-            print("⚠️ Pandoc conversion failed:", e)
+        except Exception:
+            pass
 
-        # 4️⃣ Last resort: ReportLab basic text (no formatting)
-        from reportlab.pdfgen import canvas
-        from reportlab.lib.pagesizes import A4
-        from docx import Document
-
+        # 4️⃣ Last resort: ReportLab plain text
         doc = Document(input_path)
         c = canvas.Canvas(output_pdf, pagesize=A4)
         width, height = A4
@@ -91,58 +83,61 @@ class DocuToImageConverter:
                 c.showPage()
                 y = height - 50
         c.save()
-        print("⚠️ Fallback to plain ReportLab text output:", output_pdf)
         return output_pdf
 
     def _convert_pdf_to_images(self, pdf_path: str, dpi: int = 200):
-        """
-        Converts each page of a PDF into images using PyMuPDF directly.
-        """
         images = []
-
-        try:
-            pdf_document = fitz.open(pdf_path)  # Use `PyMuPDF` instead of fitz alias
-            for page_num in range(len(pdf_document)):
-                page = pdf_document[page_num]
-                # Render page to a pixmap with the specified DPI
-                pixmap = page.get_pixmap(dpi=dpi)
-                # Convert pixmap to an Image object using PIL
-                image = Image.frombytes("RGB", [pixmap.width, pixmap.height], pixmap.samples)
-                images.append(image)
-            pdf_document.close()
-        except Exception as e:
-            raise RuntimeError(f"Failed to convert PDF to images: {e}")
-
+        pdf_document = fitz.open(pdf_path)
+        for page_num in range(len(pdf_document)):
+            page = pdf_document[page_num]
+            pixmap = page.get_pixmap(dpi=dpi)
+            image = Image.frombytes("RGB", [pixmap.width, pixmap.height], pixmap.samples)
+            images.append(image)
+        pdf_document.close()
         return images
 
-    def convert_to_images(self, file_path: str, dpi: int = 200, output_format: str = "PNG"):
+    def convert_to_images(self, file_path: str = None, input_bytes: bytes = None, dpi: int = 200, output_format: str = "PNG"):
         """
-        Converts each page of a document into a list of PIL images.
-        Supports .pdf, .doc, .docx, and image files (.jpg, .png, etc.)
-        Ensures all outputs are in a consistent image format.
+        Convert a file path or binary content to PIL images.
+        Supports PDF, DOC, DOCX, and image files.
         """
-        ext = os.path.splitext(file_path)[1].lower()
+        if not file_path and not input_bytes:
+            raise ValueError("Provide either file_path or input_bytes.")
 
-        # Convert Word → PDF first
+        # Determine extension
+        if file_path:
+            ext = os.path.splitext(file_path)[1].lower()
+        elif input_bytes:
+            # Attempt to infer from first few bytes (simple)
+            if input_bytes[:4] == b"%PDF":
+                ext = ".pdf"
+            elif input_bytes[:2] == b"PK":
+                ext = ".docx"
+            else:
+                ext = ".img"  # Treat as generic image
+
+            # Write to temp file if doc/pdf
+            if ext in [".pdf", ".doc", ".docx"]:
+                file_path = self._write_temp_file(input_bytes, suffix=ext)
+
+        # Word → PDF
         if ext in [".doc", ".docx"]:
             pdf_path = self._convert_doc_to_pdf(file_path)
             images = self._convert_pdf_to_images(pdf_path, dpi=dpi)
 
-        # Convert PDF → list of images
+        # PDF → images
         elif ext == ".pdf":
             images = self._convert_pdf_to_images(file_path, dpi=dpi)
 
-        # Handle already an image file
-        elif ext in [".jpg", ".jpeg", ".png", ".bmp", ".tiff"]:
-            image = Image.open(file_path).convert("RGB")
-            # Convert to consistent format (e.g., PNG or JPEG in memory)
+        # Image
+        elif ext in [".jpg", ".jpeg", ".png", ".bmp", ".tiff", ".img"]:
+            image = Image.open(io.BytesIO(input_bytes) if input_bytes else file_path).convert("RGB")
             buffer = io.BytesIO()
             image.save(buffer, format=output_format)
             buffer.seek(0)
-            converted_image = Image.open(buffer)
-            images = [converted_image]
+            images = [Image.open(buffer)]
 
         else:
-            raise ValueError("Unsupported file type. Use .pdf, .doc, .docx, or image files")
+            raise ValueError("Unsupported file type.")
 
         return images

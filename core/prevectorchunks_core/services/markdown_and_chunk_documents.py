@@ -23,7 +23,7 @@ load_dotenv(override=True)
 class BaseDocumentStrategy:
     """Defines a standard interface for all document processing strategies."""
 
-    def process(self, file_path: str):
+    def process(self, file_path: str, input_bytes: bytes = None):
         raise NotImplementedError("process() must be implemented by subclasses")
 
 
@@ -31,7 +31,7 @@ class BaseDocumentStrategy:
 # PDF Strategy
 # -----------------------------
 class PDFStrategy(BaseDocumentStrategy):
-    def process(self, file_path: str):
+    def process(self, file_path: str, input_bytes: bytes = None):
         print(f"📄 Using PDFStrategy for {file_path}")
         converter = DocuToImageConverter()
         # Example: detect multi-column layout or extract embedded text first
@@ -52,7 +52,7 @@ class PDFStrategy(BaseDocumentStrategy):
 # Word Strategy
 # -----------------------------
 class WordStrategy(BaseDocumentStrategy):
-    def process(self, file_path: str):
+    def process(self, file_path: str, input_bytes: bytes = None):
         file_path = Path(file_path)
 
         print(f"📝 Using WordStrategy for {file_path}")
@@ -72,7 +72,7 @@ class WordStrategy(BaseDocumentStrategy):
 # Image Strategy
 # -----------------------------
 class ImageStrategy(BaseDocumentStrategy):
-    def process(self, file_path: str):
+    def process(self, file_path: str, input_bytes: bytes = None):
         print(f"🖼️ Using ImageStrategy for {file_path}")
         image = Image.open(file_path).convert("RGB")
         return [image]
@@ -96,8 +96,14 @@ class StrategyFactory:
     }
 
     @classmethod
-    def get_strategy(cls, file_path: str) -> BaseDocumentStrategy:
-        ext = os.path.splitext(file_path)[1].lower()
+    def get_strategy(cls, file_path: str,file_name:str=None) -> BaseDocumentStrategy:
+        if file_name:
+            ext=file_name[1]
+        else:
+            # Extract extension
+
+            ext = os.path.splitext(file_path)[1].lower()
+
         return cls.strategies.get(ext, None)
 
 
@@ -109,14 +115,14 @@ class MarkdownAndChunkDocuments:
         self.api_key = os.getenv("OPENAI_API_KEY")
         self.extractor = DocuToMarkdownExtractor(api_key=self.api_key)
 
-    def markdown_and_chunk_documents(self, file_path: str,include_image:bool):
+    def markdown_and_chunk_documents(self, file_path: str, input_bytes: bytes = None, include_image:bool=None,file_name:str=None):
         # Pick strategy
-        strategy = StrategyFactory.get_strategy(file_path)
+        strategy = StrategyFactory.get_strategy(file_path,file_name)
         if not strategy:
             raise ValueError(f"Unsupported file type: {file_path}")
 
         # Convert to images using correct strategy
-        images = strategy.process(file_path)
+        images = strategy.process(file_path, input_bytes)
 
         # Extract Markdown from images
         markdown_output, text_content = self.extractor.extract_markdown(images, include_image=include_image)
