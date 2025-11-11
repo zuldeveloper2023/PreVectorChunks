@@ -28,18 +28,54 @@ class DocuToImageConverter:
         """Write bytes to a temporary file and return path."""
         tmp_fd, tmp_path = tempfile.mkstemp(suffix=suffix)
         with os.fdopen(tmp_fd, "wb") as f:
-            f.write(input_bytes)
+            f.write(input_bytes.read())
         return tmp_path
 
-    def _convert_doc_to_pdf(self, input_path: str) -> str:
-        """Convert DOC/DOCX file to PDF using Word COM, LibreOffice, Pandoc, or fallback."""
+    def _convert_doc_to_pdf(self, file_path: str = None, input_bytes=None) -> str:
+        """
+        Convert DOC/DOCX to PDF. Supports:
+        - file_path (string)
+        - input_bytes (bytes, InMemoryUploadedFile, or file-like)
+        """
+
+        # ✅ If bytes are provided, write them to a temporary .docx
+        if input_bytes is not None:
+            # Get filename or fallback
+            original_name = getattr(input_bytes, "name", "uploaded.docx")
+            ext = os.path.splitext(original_name)[1] or ".docx"
+
+            # Create a temporary file path
+            temp_input_path = tempfile.mktemp(suffix=ext)
+
+            # Read bytes safely
+            if hasattr(input_bytes, "read"):  # Django UploadedFile
+                input_bytes.seek(0)
+                content = input_bytes.read()
+            else:  # already bytes
+                content = input_bytes
+
+            # Write bytes to temp file
+            with open(temp_input_path, "wb") as f:
+                f.write(content)
+
+            input_path = temp_input_path
+
+        # ✅ If file_path is provided, use it directly
+        elif file_path:
+            input_path = file_path
+
+        else:
+            raise ValueError("Must supply either file_path or input_bytes")
+
+        # ✅ Must exist at this point
         if not os.path.exists(input_path):
             raise FileNotFoundError(input_path)
 
+        # ✅ Prepare output PDF path
         output_dir = tempfile.mkdtemp()
         output_pdf = os.path.join(output_dir, Path(input_path).stem + ".pdf")
 
-        # 1️⃣ Microsoft Word COM automation (Windows only)
+        # 1️⃣ Try Microsoft Word COM automation (Windows)
         try:
             import win32com.client
             word = win32com.client.Dispatch("Word.Application")
@@ -52,7 +88,7 @@ class DocuToImageConverter:
         except Exception:
             pass
 
-        # 2️⃣ LibreOffice fallback
+        # 2️⃣ Try LibreOffice
         try:
             subprocess.run(
                 ["soffice", "--headless", "--convert-to", "pdf", "--outdir", output_dir, input_path],
@@ -65,23 +101,28 @@ class DocuToImageConverter:
         # 3️⃣ Pandoc fallback
         try:
             pdf_engine = "pdflatex" if shutil.which("pdflatex") else "wkhtmltopdf"
-            pypandoc.convert_file(input_path, "pdf", outputfile=output_pdf,
-                                  extra_args=["--standalone", f"--pdf-engine={pdf_engine}"])
+            pypandoc.convert_file(
+                input_path, "pdf",
+                outputfile=output_pdf,
+                extra_args=["--standalone", f"--pdf-engine={pdf_engine}"]
+            )
             return output_pdf
         except Exception:
             pass
 
-        # 4️⃣ Last resort: ReportLab plain text
+        # 4️⃣ Final fallback: Render plain text using ReportLab
         doc = Document(input_path)
         c = canvas.Canvas(output_pdf, pagesize=A4)
         width, height = A4
         y = height - 50
+
         for p in doc.paragraphs:
             c.drawString(50, y, p.text[:1000])
             y -= 15
             if y < 50:
                 c.showPage()
                 y = height - 50
+
         c.save()
         return output_pdf
 
@@ -96,7 +137,7 @@ class DocuToImageConverter:
         pdf_document.close()
         return images
 
-    def convert_to_images(self, file_path: str = None, input_bytes: bytes = None, dpi: int = 200, output_format: str = "PNG"):
+    def convert_to_images(self, file_path: str = None, input_bytes: bytes = None, dpi: int = 200, output_format: str = "PNG",ext:str=None):
         """
         Convert a file path or binary content to PIL images.
         Supports PDF, DOC, DOCX, and image files.
@@ -107,14 +148,15 @@ class DocuToImageConverter:
         # Determine extension
         if file_path:
             ext = os.path.splitext(file_path)[1].lower()
+            print('work')
         elif input_bytes:
             # Attempt to infer from first few bytes (simple)
-            if input_bytes[:4] == b"%PDF":
-                ext = ".pdf"
-            elif input_bytes[:2] == b"PK":
-                ext = ".docx"
-            else:
-                ext = ".img"  # Treat as generic image
+            # if input_bytes[:4] == b"%PDF":
+            #     ext = ".pdf"
+            # elif input_bytes[:2] == b"PK":
+            #     ext = ".docx"
+            # else:
+            #     ext = ".img"  # Treat as generic image
 
             # Write to temp file if doc/pdf
             if ext in [".pdf", ".doc", ".docx"]:

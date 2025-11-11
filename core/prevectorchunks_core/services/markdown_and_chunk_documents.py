@@ -1,6 +1,8 @@
 import os
 import json
 import tempfile
+import uuid
+from io import BytesIO
 from pathlib import Path
 
 from docx import Document
@@ -17,21 +19,29 @@ from ..utils.file_loader import SplitType
 
 load_dotenv(override=True)
 
+def get_file_extension(file_path,file_name):
+    ext=''
+    if file_name:
+        ext = file_name[1]
+    else:
+        # Extract extension
+        ext = os.path.splitext(file_path)[1].lower()
+    return ext
+
 # -----------------------------
 # Abstract Strategy Interface
 # -----------------------------
 class BaseDocumentStrategy:
     """Defines a standard interface for all document processing strategies."""
 
-    def process(self, file_path: str, input_bytes: bytes = None):
+    def process(self, file_path: str, input_bytes: bytes = None,ext:str=None):
         raise NotImplementedError("process() must be implemented by subclasses")
-
 
 # -----------------------------
 # PDF Strategy
 # -----------------------------
 class PDFStrategy(BaseDocumentStrategy):
-    def process(self, file_path: str, input_bytes: bytes = None):
+    def process(self, file_path: str, input_bytes: bytes = None,ext:str=None):
         print(f"📄 Using PDFStrategy for {file_path}")
         converter = DocuToImageConverter()
         # Example: detect multi-column layout or extract embedded text first
@@ -44,7 +54,7 @@ class PDFStrategy(BaseDocumentStrategy):
         # if text_ratio > 0.0001:
         #     print("📚 PDF appears text-based – using hybrid extract + image backup")
 
-        images = converter.convert_to_images(file_path)
+        images = converter.convert_to_images(file_path,input_bytes,ext=ext)
         return images
 
 
@@ -52,16 +62,18 @@ class PDFStrategy(BaseDocumentStrategy):
 # Word Strategy
 # -----------------------------
 class WordStrategy(BaseDocumentStrategy):
-    def process(self, file_path: str, input_bytes: bytes = None):
-        file_path = Path(file_path)
-
-        print(f"📝 Using WordStrategy for {file_path}")
-
+    def process(self, file_path: str, input_bytes: bytes = None,ext:str=None):
+        file_name=''
+        if file_path:
+            file_name = Path(file_path)
+            print(f"📝 Using WordStrategy for {file_path}")
+        else:
+            file_name_no_ext = os.path.splitext(input_bytes.name)[0]
         with tempfile.TemporaryDirectory() as tmpdir:
-            pdf_path = Path(tmpdir) / f"{file_path.stem}.pdf"
+            pdf_path = Path(tmpdir) / f"{file_name}.pdf"
 
             converter = DocuToImageConverter()
-            pdf_path = converter._convert_doc_to_pdf(file_path)
+            pdf_path = converter._convert_doc_to_pdf(file_path=file_path, input_bytes=input_bytes)
             images = converter.convert_to_images(pdf_path)
 
 
@@ -72,9 +84,31 @@ class WordStrategy(BaseDocumentStrategy):
 # Image Strategy
 # -----------------------------
 class ImageStrategy(BaseDocumentStrategy):
-    def process(self, file_path: str, input_bytes: bytes = None):
+    def process(self, file_path: str, input_bytes: bytes = None,ext:str=None):
         print(f"🖼️ Using ImageStrategy for {file_path}")
-        image = Image.open(file_path).convert("RGB")
+        if file_path:
+            # Path-based loading
+            image = Image.open(file_path).convert("RGB")
+
+        else:
+            # Byte-based loading
+            if input_bytes is None:
+                raise ValueError("Either file_path or input_bytes must be provided")
+
+            # If it's a Django UploadedFile → read() needed
+            if hasattr(input_bytes, "read"):
+                input_bytes.seek(0)
+                image_bytes = input_bytes.read()
+
+            # If it's already bytes
+            elif isinstance(input_bytes, (bytes, bytearray)):
+                image_bytes = input_bytes
+
+            else:
+                raise TypeError("input_bytes must be bytes or file-like object")
+
+            image = Image.open(BytesIO(image_bytes)).convert("RGB")
+
         return [image]
 
 
@@ -122,7 +156,8 @@ class MarkdownAndChunkDocuments:
             raise ValueError(f"Unsupported file type: {file_path}")
 
         # Convert to images using correct strategy
-        images = strategy.process(file_path, input_bytes)
+        ext=get_file_extension(file_path,file_name)
+        images = strategy.process(file_path, input_bytes,ext)
 
         # Extract Markdown from images
         markdown_output, text_content = self.extractor.extract_markdown(images, include_image=include_image)
@@ -152,9 +187,15 @@ class MarkdownAndChunkDocuments:
             if not any(md_item.get("markdown_text") == m.get("markdown_text") for m in mapped_chunks):
                 md_item["chunked_text"] = md_item["markdown_text"]
                 mapped_chunks.append(md_item)
-
+        adduuid(mapped_chunks)
         print("✅ Processing complete.")
         return mapped_chunks
+
+def adduuid(mapped_chunks):
+    # Assuming mapped_chunks is a list of dictionaries
+
+    for chunk in mapped_chunks:
+        chunk['id'] = str(uuid.uuid4())
 
 
 # -----------------------------
