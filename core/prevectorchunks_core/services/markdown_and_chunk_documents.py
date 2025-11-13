@@ -191,6 +191,77 @@ class MarkdownAndChunkDocuments:
         print("✅ Processing complete.")
         return mapped_chunks
 
+    def markdown_and_chunk_documents_stream(
+            self,
+            file_path: str,
+            input_bytes: bytes = None,
+            include_image: bool = None,
+            file_name: str = None,
+    ):
+        """Generator version of markdown_and_chunk_documents that yields progress JSON events"""
+
+        def report(pct, msg=""):
+            yield {"progress": int(pct), "status": msg}
+
+        # 1️⃣ Pick strategy
+        yield from report(5, "Selecting strategy...")
+        strategy = StrategyFactory.get_strategy(file_path, file_name)
+        if not strategy:
+            raise ValueError(f"Unsupported file type: {file_path}")
+
+        # 2️⃣ Convert to images
+        ext = get_file_extension(file_path, file_name)
+        yield from report(15, "Processing file into images...")
+        images = strategy.process(file_path, input_bytes, ext)
+
+        # 3️⃣ Extract Markdown
+        yield from report(35, "Extracting markdown...")
+        markdown_output, text_content = self.extractor.extract_markdown(images, include_image=include_image)
+        binary_text_content = text_content.encode("utf-8")
+
+        # 4️⃣ Chunking
+        yield from report(55, "Chunking text...")
+        chunk_client = OpenAI(api_key=self.api_key)
+        cm = ChunkMapper(chunk_client, markdown_output, embedding_model="text-embedding-3-small")
+
+        splitter_config = SplitterConfig(
+            chunk_size=300,
+            chunk_overlap=0,
+            separators=["\n"],
+            split_type=SplitType.R_PRETRAINED_PROPOSITION.value,
+            min_rl_chunk_size=5,
+            max_rl_chunk_size=50,
+            enableLLMTouchUp=False,
+        )
+
+        chunked_text = chunk_documents(
+            "", file_name="install_ins.txt", file_path=binary_text_content, splitter_config=splitter_config
+        )
+        flat_chunks = ["".join(inner) for inner in chunked_text]
+
+        # 5️⃣ Map chunks (embedding)
+        yield from report(60, f"Mapping {len(flat_chunks)} chunks...")
+        total = len(flat_chunks)
+        mapped_chunks = []
+        for i, chunk in enumerate(flat_chunks, start=1):
+            mapped = cm.map_chunks([chunk])
+            mapped_chunks.extend(mapped)
+            progress = 60 + (i / total) * 30
+            yield from report(progress, f"Mapping chunk {i}/{total}")
+
+        # 6️⃣ Merge unmapped markdown sections
+        yield from report(95, "Merging markdown...")
+        for md_item in markdown_output:
+            if not any(md_item.get("markdown_text") == m.get("markdown_text") for m in mapped_chunks):
+                md_item["chunked_text"] = md_item["markdown_text"]
+                mapped_chunks.append(md_item)
+
+        adduuid(mapped_chunks)
+        yield from report(100, "✅ Processing complete.")
+
+        # Final result
+        yield {"progress": 100, "status": "done", "result": mapped_chunks}
+
 def adduuid(mapped_chunks):
     # Assuming mapped_chunks is a list of dictionaries
 
