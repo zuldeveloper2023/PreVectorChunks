@@ -392,8 +392,8 @@ def qfetch_records_grouped_by_document_name(index, batch_size=100,limit=100):
 
 
 #function that chunks any document
-def chunk_documents(instructions,file_name,file_path="content_playground/content.json",splitter_config=None):
-    return prepare_chunked_text(file_path, file_name,instructions,splitter_config=splitter_config)
+def chunk_documents(instructions,file_name,file_path="content_playground/content.json",splitter_config=None,client=None):
+    return prepare_chunked_text(file_path, file_name,instructions,splitter_config=splitter_config,client=client)
 
 #function that chunks any document as well as inserts into vdb
 def chunk_and_upsert_to_vdb(index_n,instructions,file_name,file_path="content_playground/content.json",splitter_config=None):

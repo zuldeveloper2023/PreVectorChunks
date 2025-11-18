@@ -9,6 +9,7 @@ from PIL import Image
 import pytesseract
 import uuid
 
+from langchain.chat_models import init_chat_model
 from langchain_text_splitters import RecursiveCharacterTextSplitter, CharacterTextSplitter
 from openai import OpenAI
 from openai import OpenAI
@@ -220,38 +221,63 @@ def split_text_by_config(text, splitter_config:SplitterConfig=None, binary_data=
             return [" ".join(words[i:i + splitter_config.chunk_size]) for i in
                     range(0, len(words), splitter_config.chunk_size)]
 
+import json
+from langchain.schema import HumanMessage
+import uuid
 
-def process_with_llm(chunk,instructions):
+def process_with_llm(chunk, instructions=None, xclient=None):
     """
     Send a chunk to LLM and return structured JSON array.
     Expected format: [{"id": ..., "title": ..., "text": ...}, ...]
     """
-    context = f"""
-    Take the following text and split it into sections based on the most important category headings (ignore lower level headings).
-    For each section, return a JSON object with - no extra words other than the json and remove ```json:
-    - "id" (a UUID you generate),
-    - "title" (the most important heading),
-    - "text" (the remaining text under that heading).
+    instructions = instructions or "Extract sections"
+
+    # Combine chunk + instructions into one prompt
+    prompt_text = f"""
+    You are a helpful assistant that structures text into JSON sections.
+    Take the following text and split it into sections based on the most important category headings.
+     return a JSON array of objects with the following keys:
+      - "id" (a UUID you generate)
+      - "title" (the most important heading)
+      - "text" (the remaining text under that heading)
+    Return ONLY valid JSON, without extra text or backtick or markdown formatting.
 
     Text:
     {chunk}
+
+    Instructions: {instructions}
     """
-    instructions=instructions or "Exract sections"
-    system_prompt="You are a helpful assistant that structures text into JSON sections."
-    # Create an instance of your LLM wrapper
-    llm = LLMClientWrapper(client, model="gpt-4o-mini", temperature=0, system_prompt=system_prompt)
-    response=llm.chat(context,instructions)
+
+    # Use provided client or create new wrapper
+    if xclient is None:
+        xclient = init_chat_model(
+            model="gpt-4o-mini",
+            model_provider="openai",  # you can later swap to "anthropic", "google", etc.
+            api_key=os.getenv("OPENAI_API_KEY")
+        )
+
+
+    # Call the LLM
+    response_msg = xclient.predict_messages([HumanMessage(content=prompt_text)])
+    response_text = response_msg.content
 
     # Parse JSON safely
     try:
-        structured_data = eval(response)
-    except Exception:
-        structured_data = []
+        structured_data = json.loads(response_text)
+        if isinstance(structured_data, str):
+            # Sometimes LLM returns a JSON string inside quotes
+            structured_data = json.loads(structured_data)
+    except json.JSONDecodeError as e:
+        print("LLM returned invalid JSON:", response_text)
+        raise e
+
+    for item in structured_data:
+        if isinstance(item, dict) and "id" not in item:
+            item["id"] = str(uuid.uuid4())
 
     return structured_data
 
-
-def process_large_text(text, instructions,splitter_config:SplitterConfig=None):
+def process_large_text(text, instructions,splitter_config:SplitterConfig=None,client=None):
     """Main function: split -> send to LLM -> collect results."""
     chunks = split_text_by_config(text, splitter_config=splitter_config)
     all_results = []
@@ -261,7 +287,7 @@ def process_large_text(text, instructions,splitter_config:SplitterConfig=None):
             return chunks
         elif splitter_config.llm_structured_output_type == LLM_Structured_Output_Type.STRUCTURED_WITH_VECTOR_DB_ID_GENERATED:
             for chunk in chunks:
-                structured = process_with_llm(chunk,instructions)
+                structured = process_with_llm(chunk,instructions,client)
                 # Ensure UUIDs exist
                 for obj in structured:
                     if "id" not in obj:
@@ -274,9 +300,9 @@ def process_large_text(text, instructions,splitter_config:SplitterConfig=None):
 
 
 
-def prepare_chunked_text(file_path,file_name,instructions,chunk_size=200,splitter_config:SplitterConfig=None):
+def prepare_chunked_text(file_path,file_name,instructions,chunk_size=200,splitter_config:SplitterConfig=None,client=None):
     content =extract_content_agnostic(file_path,file_name)
-    results=process_large_text(content,instructions, splitter_config=splitter_config)
+    results=process_large_text(content,instructions, splitter_config=splitter_config,client=client)
     print (results)
     return results
 

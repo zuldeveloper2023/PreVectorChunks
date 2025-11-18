@@ -2,39 +2,35 @@ import numpy as np
 
 
 class ChunkMapper:
-    def __init__(self, client, markdown_output, embedding_model="text-embedding-3-small"):
+    def __init__(self, embedding_client, markdown_output, embedding_model="text-embedding-3-small"):
         """
         client: OpenAI client object
         markdown_output: list of JSON objects containing at least 'markdown_text'
         embedding_model: model for embeddings
         """
-        self.client = client
+        self.embedding_client = embedding_client
         self.markdown_output = markdown_output
         self.embedding_model = embedding_model
 
         # Precompute embeddings for markdown_output
         self.markdown_embeddings = self._compute_markdown_embeddings()
 
-    # -----------------------------
-    # Compute embeddings for all markdown items
-    # -----------------------------
-    def _compute_markdown_embeddings(self):
-        embeddings = []
-        for obj in self.markdown_output:
-            markdown_text = obj.get("markdown_text", "")
-            emb = self._get_embedding(markdown_text)
-            embeddings.append(emb)
-        return embeddings
+        # -----------------------------
+        # Compute embeddings for markdown JSON items
+        # -----------------------------
 
-    # -----------------------------
-    # Embedding helper
-    # -----------------------------
+    def _compute_markdown_embeddings(self):
+        texts = [obj.get("markdown_text", "") for obj in self.markdown_output]
+        return self.embedding_client.embed_documents(texts)
+
+        # -----------------------------
+        # Get embedding for a single text
+        # -----------------------------
+
     def _get_embedding(self, text):
-        response = self.client.embeddings.create(
-            input=text,
-            model=self.embedding_model
-        )
-        return response.data[0].embedding
+        # LangChain uses a list input
+        emb = self.embedding_client.embed_query(text)
+        return emb
 
     # -----------------------------
     # Cosine similarity

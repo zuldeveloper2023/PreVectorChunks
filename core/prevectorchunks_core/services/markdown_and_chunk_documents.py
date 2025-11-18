@@ -7,6 +7,7 @@ from pathlib import Path
 
 from docx import Document
 from dotenv import load_dotenv
+from langchain_openai import OpenAIEmbeddings
 from openai import OpenAI
 from PIL import Image
 
@@ -145,11 +146,12 @@ class StrategyFactory:
 # Main Orchestrator
 # -----------------------------
 class MarkdownAndChunkDocuments:
-    def __init__(self):
+    def __init__(self,client):
         self.api_key = os.getenv("OPENAI_API_KEY")
-        self.extractor = DocuToMarkdownExtractor(api_key=self.api_key)
+        self.extractor = DocuToMarkdownExtractor(api_key=self.api_key,client=client)
+        self.client=client
 
-    def markdown_and_chunk_documents(self, file_path: str, input_bytes: bytes = None, include_image:bool=None,file_name:str=None):
+    def markdown_and_chunk_documents(self, file_path: str, input_bytes: bytes = None, include_image:bool=None,file_name:str=None,embedding_client=None):
         # Pick strategy
         strategy = StrategyFactory.get_strategy(file_path,file_name)
         if not strategy:
@@ -164,8 +166,14 @@ class MarkdownAndChunkDocuments:
         binary_text_content = text_content.encode("utf-8")
 
         # Chunking and mapping
-        chunk_client = OpenAI(api_key=self.api_key)
-        cm = ChunkMapper(chunk_client, markdown_output, embedding_model="text-embedding-3-small")
+        #chunk_client = OpenAI(api_key=self.api_key)
+        if embedding_client is None:
+            embedding_client = OpenAIEmbeddings(
+                model="text-embedding-3-small",
+                api_key=self.api_key
+            )
+
+        cm = ChunkMapper(embedding_client, markdown_output, embedding_model="text-embedding-3-small")
         splitter_config = SplitterConfig(
             chunk_size=300,
             chunk_overlap=0,

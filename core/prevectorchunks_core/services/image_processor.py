@@ -10,6 +10,8 @@ import requests
 from dotenv import load_dotenv
 from typing import Optional
 
+from langchain.chat_models import init_chat_model
+from langchain_core.messages import HumanMessage
 from openai import OpenAI
 from langchain_core.pydantic_v1 import BaseModel
 
@@ -31,15 +33,22 @@ class ImageProcessor:
     Wrapper for a GPT-4o multimodal image reasoning pipeline.
     """
 
-    def __init__(self, model_name: str = "gpt-4o-mini"):
+    def __init__(self, api_key:str=None, model_name: str = "gpt-4o-mini",client=None):
         load_dotenv(override=True)
         self.api_key = os.getenv("OPENAI_API_KEY")
         if not self.api_key:
             raise ValueError("❌ OPENAI_API_KEY not found in .env or environment!")
 
+        if client is None:
+            client = init_chat_model(
+                model=model_name,
+                model_provider="openai",  # you can later swap to "anthropic", "google", etc.
+                api_key=api_key
+            )
+        self.llm = client
         # Initialize multimodal client
-        self.llm = OpenAI(api_key=self.api_key)
-        self.model_name = model_name
+
+        self.model_name = client.model_name
 
     # -------------------------------------------------
     # 3️⃣ Image encoding helper
@@ -70,17 +79,11 @@ class ImageProcessor:
                         },
                     ]
         content1.extend(finstructioncontent)
-        response = self.llm.chat.completions.create(
-            model=self.model_name,
-            messages=[
-                {
-                    "role": "user",
-                    "content": content1
-                }
-            ],
-        )
+        # Call the LangChain model
+        response_msg = self.llm.predict_messages([HumanMessage(content=content1)])
 
-        result_text = response.choices[0].message.content
+        # Extract the text
+        result_text = response_msg.content
         print("✅ Analysis complete.")
         print(result_text)
         return result_text
