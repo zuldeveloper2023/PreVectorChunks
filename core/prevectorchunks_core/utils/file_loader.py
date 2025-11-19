@@ -27,7 +27,8 @@ client =  OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 from django.core.files.uploadedfile import UploadedFile
 
 from enum import Enum
-
+import pandas as pd
+from pptx import Presentation
 class SplitType(Enum):
     RECURSIVE = "RecursiveCharacterTextSplitter"
     CHARACTER = "CharacterTextSplitter"
@@ -152,6 +153,35 @@ def load_file_by_type(ext, filepath):
             data = json.load(f)
             # Convert JSON to text (pretty print or flatten)
             text = json.dumps(data, ensure_ascii=False, indent=2)
+    # -------------------------
+    # PPTX (PowerPoint)
+    # -------------------------
+    elif ext in [".pptx", ".ppt"]:
+        pres = Presentation(filepath)
+        slides_text = []
+        for slide in pres.slides:
+            slide_text = []
+            for shape in slide.shapes:
+                if hasattr(shape, "text"):
+                    slide_text.append(shape.text)
+            slides_text.append("\n".join(slide_text))
+        text = "\n\n---- Slide Break ----\n\n".join(slides_text)
+
+    # -------------------------
+    # Excel (XLS / XLSX)
+    # -------------------------
+    elif ext in [".xlsx", ".xls"]:
+        # Using pandas for convenience
+        try:
+            df_dict = pd.read_excel(filepath, sheet_name=None)
+            all_sheets = []
+            for sheet, df in df_dict.items():
+                sheet_text = f"=== Sheet: {sheet} ===\n"
+                sheet_text += df.to_string(index=False)
+                all_sheets.append(sheet_text)
+            text = "\n\n".join(all_sheets)
+        except Exception as e:
+            raise ValueError(f"Failed to read Excel file: {e}")
     else:
         raise ValueError(f"Unsupported file type: {ext}")
     return text

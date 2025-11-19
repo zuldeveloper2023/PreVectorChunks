@@ -164,8 +164,19 @@ class DocuToImageConverter:
 
         # Word → PDF
         if ext in [".doc", ".docx"]:
-            pdf_path = self._convert_doc_to_pdf(file_path)
+            pdf_path = self._convert_doc_to_pdf(file_path, input_bytes)
             images = self._convert_pdf_to_images(pdf_path, dpi=dpi)
+
+        # PowerPoint → PDF
+        elif ext in [".ppt", ".pptx"]:
+            pdf_path = self._convert_ppt_to_pdf(file_path, input_bytes)
+            images = self._convert_pdf_to_images(pdf_path, dpi=dpi)
+
+        # Excel → PDF
+        elif ext in [".xls", ".xlsx"]:
+            pdf_path = self._convert_excel_to_pdf(file_path, input_bytes)
+            images = self._convert_pdf_to_images(pdf_path, dpi=dpi)
+
 
         # PDF → images
         elif ext == ".pdf":
@@ -183,3 +194,125 @@ class DocuToImageConverter:
             raise ValueError("Unsupported file type.")
 
         return images
+
+    def _convert_ppt_to_pdf(self, file_path: str = None, input_bytes=None) -> str:
+        """
+        Convert PPT/PPTX to PDF using:
+        1. PowerPoint COM (Windows)
+        2. LibreOffice
+        """
+
+        # write bytes if needed
+        if input_bytes is not None:
+            original_name = getattr(input_bytes, "name", "uploaded.pptx")
+            ext = os.path.splitext(original_name)[1] or ".pptx"
+            temp_input_path = tempfile.mktemp(suffix=ext)
+
+            if hasattr(input_bytes, "read"):
+                input_bytes.seek(0)
+                content = input_bytes.read()
+            else:
+                content = input_bytes
+
+            with open(temp_input_path, "wb") as f:
+                f.write(content)
+
+            input_path = temp_input_path
+
+        elif file_path:
+            input_path = file_path
+
+        else:
+            raise ValueError("Must supply either file_path or input_bytes")
+
+        output_dir = tempfile.mkdtemp()
+        output_pdf = os.path.join(output_dir, Path(input_path).stem + ".pdf")
+
+        # 1️⃣ Try PowerPoint COM on Windows
+        try:
+            import win32com.client
+            powerpoint = win32com.client.Dispatch("PowerPoint.Application")
+            powerpoint.Visible = 1
+
+            deck = powerpoint.Presentations.Open(str(Path(input_path).resolve()))
+            deck.SaveAs(str(Path(output_pdf).resolve()), 32)  # 32 = PDF
+            deck.Close()
+            powerpoint.Quit()
+
+            return output_pdf
+        except Exception:
+            pass
+
+        # 2️⃣ Try LibreOffice
+        try:
+            subprocess.run(
+                ["soffice", "--headless", "--convert-to", "pdf", "--outdir", output_dir, input_path],
+                check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE
+            )
+            return output_pdf
+        except Exception:
+            pass
+
+        raise ValueError("Unable to convert PPT/PPTX to PDF")
+
+    def _convert_excel_to_pdf(self, file_path: str = None, input_bytes=None) -> str:
+        """
+        Convert XLS/XLSX to PDF using:
+        1. Excel COM (Windows)
+        2. LibreOffice
+        """
+
+        # write bytes if needed
+        if input_bytes is not None:
+            original_name = getattr(input_bytes, "name", "uploaded.xlsx")
+            ext = os.path.splitext(original_name)[1] or ".xlsx"
+            temp_input_path = tempfile.mktemp(suffix=ext)
+
+            if hasattr(input_bytes, "read"):
+                input_bytes.seek(0)
+                content = input_bytes.read()
+            else:
+                content = input_bytes
+
+            with open(temp_input_path, "wb") as f:
+                f.write(content)
+
+            input_path = temp_input_path
+
+        elif file_path:
+            input_path = file_path
+
+        else:
+            raise ValueError("Must supply either file_path or input_bytes")
+
+        output_dir = tempfile.mkdtemp()
+        output_pdf = os.path.join(output_dir, Path(input_path).stem + ".pdf")
+
+        # 1️⃣ Try Excel COM (Windows)
+        try:
+            import win32com.client
+            excel = win32com.client.Dispatch("Excel.Application")
+            excel.Visible = False
+
+            wb = excel.Workbooks.Open(str(Path(input_path).resolve()))
+            wb.ExportAsFixedFormat(0, str(Path(output_pdf).resolve()))  # 0 = PDF
+            wb.Close()
+            excel.Quit()
+
+            return output_pdf
+        except Exception:
+            pass
+
+        # 2️⃣ Try LibreOffice
+        try:
+            subprocess.run(
+                ["soffice", "--headless", "--convert-to", "pdf", "--outdir", output_dir, input_path],
+                check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE
+            )
+            return output_pdf
+        except Exception:
+            pass
+
+        raise ValueError("Unable to convert XLS/XLSX to PDF")
+
+

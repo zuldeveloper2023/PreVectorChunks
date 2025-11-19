@@ -112,6 +112,34 @@ class ImageStrategy(BaseDocumentStrategy):
 
         return [image]
 
+class PowerPointStrategy(BaseDocumentStrategy):
+    def process(self, file_path: str, input_bytes: bytes = None, ext: str = None):
+        print(f"📊 Using PowerPointStrategy for {file_path or input_bytes}")
+
+        converter = DocuToImageConverter()
+
+        # Convert PPT/PPTX → PDF
+        pdf_path = converter._convert_ppt_to_pdf(file_path=file_path, input_bytes=input_bytes)
+
+        # Then convert PDF → images
+        images = converter.convert_to_images(pdf_path)
+
+        return images
+
+class ExcelStrategy(BaseDocumentStrategy):
+    def process(self, file_path: str, input_bytes: bytes = None, ext: str = None):
+        print(f"📈 Using ExcelStrategy for {file_path or input_bytes}")
+
+        converter = DocuToImageConverter()
+
+        # Convert XLS/XLSX → PDF
+        pdf_path = converter._convert_excel_to_pdf(file_path=file_path, input_bytes=input_bytes)
+
+        # Convert PDF → images
+        images = converter.convert_to_images(pdf_path)
+
+        return images
+
 
 # -----------------------------
 # Strategy Factory
@@ -128,6 +156,17 @@ class StrategyFactory:
         ".png": ImageStrategy(),
         ".bmp": ImageStrategy(),
         ".tiff": ImageStrategy(),
+
+        # NEW — PowerPoint
+        ".ppt": PowerPointStrategy(),
+        ".pptx": PowerPointStrategy(),
+
+        # NEW — Excel
+        ".xls": ExcelStrategy(),
+        ".xlsx": ExcelStrategy(),
+
+        # NEW — Google Docs/Sheets
+
     }
 
     @classmethod
@@ -205,6 +244,7 @@ class MarkdownAndChunkDocuments:
             input_bytes: bytes = None,
             include_image: bool = None,
             file_name: str = None,
+            embedding_client=None
     ):
         """Generator version of markdown_and_chunk_documents that yields progress JSON events"""
 
@@ -229,8 +269,16 @@ class MarkdownAndChunkDocuments:
 
         # 4️⃣ Chunking
         yield from report(55, "Chunking text...")
-        chunk_client = OpenAI(api_key=self.api_key)
-        cm = ChunkMapper(chunk_client, markdown_output, embedding_model="text-embedding-3-small")
+
+        # Chunking and mapping
+        # chunk_client = OpenAI(api_key=self.api_key)
+        if embedding_client is None:
+            embedding_client = OpenAIEmbeddings(
+                model="text-embedding-3-small",
+                api_key=self.api_key
+            )
+
+        cm = ChunkMapper(embedding_client, markdown_output, embedding_model="text-embedding-3-small")
 
         splitter_config = SplitterConfig(
             chunk_size=300,

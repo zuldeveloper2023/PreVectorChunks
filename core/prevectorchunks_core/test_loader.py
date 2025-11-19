@@ -29,7 +29,7 @@ def test_load_file_and_upsert_chunks_to_vdb(temp_json_file):
         model_provider="openai",  # you can later swap to "anthropic", "google", etc.
         api_key=os.getenv("OPENAI_API_KEY")
     )
-    chunks = chunk_documents_crud_vdb.chunk_documents("extract", file_name=None, file_path="content.txt",
+    chunks = chunk_documents_crud_vdb.chunk_documents("extract", file_name=None, file_path="C:\\test-sandbox\\be\\PreVectorDeps\\PreVectorChunks\\core\\prevectorchunks_core\\services\\content.pptx",
 
                                                       splitter_config=splitter_config,client=client)
 
@@ -51,7 +51,7 @@ def test_markdown(temp_json_file):
         api_key=os.getenv("OPENAI_API_KEY")
     )
     mapped_chunks = markdown_and_chunk_documents.markdown_and_chunk_documents(
-        "content.docx",include_image=True,embedding_client=embedding_client)
+        "C:\\test-sandbox\\be\\PreVectorDeps\\PreVectorChunks\\core\\prevectorchunks_core\\services\\content.pptx",include_image=True,embedding_client=embedding_client)
     print(mapped_chunks)
     for i, c in enumerate(mapped_chunks):
         print(f"Chunk {i + 1}: {c}")
