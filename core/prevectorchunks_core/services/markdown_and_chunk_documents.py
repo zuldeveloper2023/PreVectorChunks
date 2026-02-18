@@ -151,6 +151,8 @@ class StrategyFactory:
         ".pdf": PDFStrategy(),
         ".doc": WordStrategy(),
         ".docx": WordStrategy(),
+        ".txt": WordStrategy(),
+        ".csv": WordStrategy(),
         ".jpg": ImageStrategy(),
         ".jpeg": ImageStrategy(),
         ".png": ImageStrategy(),

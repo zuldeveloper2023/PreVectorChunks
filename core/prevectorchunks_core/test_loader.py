@@ -20,7 +20,7 @@ def temp_json_file(tmp_path):
     return file_path
 
 
-def test_load_file_and_upsert_chunks_to_vdb(temp_json_file):
+def test_load_file_and_upsert_chunks_to_vdb():
     splitter_config = SplitterConfig(chunk_size=300, chunk_overlap=0, separators=["\n"],
                                      split_type=SplitType.R_PRETRAINED_PROPOSITION.value, min_rl_chunk_size=5,
                                      max_rl_chunk_size=50, enableLLMTouchUp=True,llm_structured_output_type=LLM_Structured_Output_Type.STRUCTURED_WITH_VECTOR_DB_ID_GENERATED)
@@ -38,7 +38,7 @@ def test_load_file_and_upsert_chunks_to_vdb(temp_json_file):
         print(f"Chunk {i + 1}: {c}")
     print(chunks)
 
-def test_markdown(temp_json_file):
+def test_markdown():
 
     client = init_chat_model(
         model="gpt-4o-mini",

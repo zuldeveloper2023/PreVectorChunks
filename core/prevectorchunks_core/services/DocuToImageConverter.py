@@ -137,6 +137,89 @@ class DocuToImageConverter:
         pdf_document.close()
         return images
 
+    def _convert_txt_to_pdf(self, file_path: str = None, input_bytes=None) -> str:
+        """
+        Convert a .txt file or text bytes to PDF using ReportLab.
+        """
+        # Read text
+        if input_bytes is not None:
+            if hasattr(input_bytes, "read"):
+                input_bytes.seek(0)
+                text = input_bytes.read().decode("utf-8")
+            else:
+                text = input_bytes.decode("utf-8")
+        elif file_path:
+            with open(file_path, "r", encoding="utf-8") as f:
+                text = f.read()
+        else:
+            raise ValueError("Must supply either file_path or input_bytes")
+
+        # Prepare output PDF
+        output_dir = tempfile.mkdtemp()
+        output_pdf = os.path.join(output_dir, (Path(file_path).stem if file_path else "temp") + ".pdf")
+
+        # Write text to PDF
+        c = canvas.Canvas(output_pdf, pagesize=A4)
+        width, height = A4
+        y = height - 50
+
+        for line in text.splitlines():
+            c.drawString(50, y, line[:1000])  # truncate very long lines
+            y -= 15
+            if y < 50:
+                c.showPage()
+                y = height - 50
+
+        c.save()
+        return output_pdf
+
+    def _convert_csv_to_pdf(self, file_path: str = None, input_bytes=None) -> str:
+        """
+        Convert a CSV file or CSV bytes to PDF using ReportLab tables.
+        """
+        # Read CSV data
+        rows = []
+        if input_bytes is not None:
+            if hasattr(input_bytes, "read"):
+                input_bytes.seek(0)
+                reader = csv.reader(io.StringIO(input_bytes.read().decode("utf-8")))
+            else:
+                reader = csv.reader(io.StringIO(input_bytes.decode("utf-8")))
+            rows = list(reader)
+        elif file_path:
+            with open(file_path, "r", encoding="utf-8") as f:
+                reader = csv.reader(f)
+                rows = list(reader)
+        else:
+            raise ValueError("Must supply either file_path or input_bytes")
+
+        if not rows:
+            raise ValueError("CSV is empty")
+
+        # Prepare output PDF
+        output_dir = tempfile.mkdtemp()
+        output_pdf = os.path.join(output_dir, (Path(file_path).stem if file_path else "temp") + ".pdf")
+
+        # Create a table PDF
+        doc = SimpleDocTemplate(output_pdf, pagesize=A4)
+        table = Table(rows, repeatRows=1)
+
+        # Style table
+        style = TableStyle([
+            ('BACKGROUND', (0, 0), (-1, 0), colors.lightgrey),
+            ('TEXTCOLOR', (0, 0), (-1, 0), colors.black),
+            ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+            ('FONTSIZE', (0, 0), (-1, -1), 10),
+            ('BOTTOMPADDING', (0, 0), (-1, 0), 6),
+            ('GRID', (0, 0), (-1, -1), 0.5, colors.grey)
+        ])
+        table.setStyle(style)
+
+        elements = [table]
+        doc.build(elements)
+
+        return output_pdf
     def convert_to_images(self, file_path: str = None, input_bytes: bytes = None, dpi: int = 200, output_format: str = "PNG",ext:str=None):
         """
         Convert a file path or binary content to PIL images.
@@ -165,6 +248,15 @@ class DocuToImageConverter:
         # Word → PDF
         if ext in [".doc", ".docx"]:
             pdf_path = self._convert_doc_to_pdf(file_path, input_bytes)
+            images = self._convert_pdf_to_images(pdf_path, dpi=dpi)
+
+        # TXT → PDF
+        elif ext == ".txt":
+            pdf_path = self._convert_txt_to_pdf(file_path, input_bytes)
+            images = self._convert_pdf_to_images(pdf_path, dpi=dpi)
+        # CSV → PDF
+        elif ext == ".csv":
+            pdf_path = self._convert_csv_to_pdf(file_path, input_bytes)
             images = self._convert_pdf_to_images(pdf_path, dpi=dpi)
 
         # PowerPoint → PDF
