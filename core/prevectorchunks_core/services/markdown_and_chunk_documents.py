@@ -2,6 +2,7 @@ import os
 import json
 import tempfile
 import uuid
+from base64 import b64encode
 from io import BytesIO
 from pathlib import Path
 
@@ -12,6 +13,7 @@ from openai import OpenAI
 from PIL import Image
 
 from .DocuToImageConverter import DocuToImageConverter
+from .EmbeddedImageExtractor import EmbeddedImageExtractor
 from .DocuToMarkdownExtractor import DocuToMarkdownExtractor
 from ..config.splitter_config import SplitterConfig
 from .chunk_documents_crud_vdb import chunk_documents
@@ -192,6 +194,47 @@ class MarkdownAndChunkDocuments:
         self.extractor = DocuToMarkdownExtractor(api_key=self.api_key,client=client)
         self.client=client
 
+    def extract_embedded_images_for_pages(self,page_images, file_path, ext):
+        """
+        For each page image, extract embedded images depending on document type.
+
+        Args:
+            page_images (List[PIL.Image]): List of page images
+            file_path (str): Original file path
+            ext (str): File extension (e.g., .docx, .pdf, .png)
+
+        Returns:
+            List[dict]: Each dict contains:
+                - page_image: the PIL image of the page
+                - embedded_images: list of dicts with image_data (base64), image_index, page_number
+        """
+        pages = []
+
+        for i, page_image in enumerate(page_images, start=1):
+            embedded_images = []
+            eie = EmbeddedImageExtractor()
+
+            # pass all arguments as keyword arguments
+            if ext == ".docx":
+                embedded_images = eie.extract_all_images_from_docx(file_path=file_path, page_number=i)
+            elif ext == ".pdf":
+                embedded_images = eie.extract_embedded_images_from_pdf_page(file_path=file_path, page_number=i)
+
+            elif ext in [".png", ".jpg", ".jpeg", ".tiff", ".bmp"]:
+                # Single image files → treat the image itself as embedded
+                buf = BytesIO()
+                page_image.save(buf, format="PNG")
+                b64_image = b64encode(buf.getvalue()).decode("utf-8")
+                embedded_images = [{"image_data": b64_image, "image_index": 1, "page_number": i}]
+            # You can add more document types here (e.g., PPTX, HTML)
+
+            pages.append({
+                "page_number": i,
+                "page_image": page_image,
+                "embedded_images": embedded_images
+            })
+
+        return pages
     def markdown_and_chunk_documents(self, file_path: str, input_bytes: bytes = None, include_image:bool=None,file_name:str=None,embedding_client=None):
         # Pick strategy
         strategy = StrategyFactory.get_strategy(file_path,file_name)
@@ -201,6 +244,10 @@ class MarkdownAndChunkDocuments:
         # Convert to images using correct strategy
         ext=get_file_extension(file_path,file_name)
         images = strategy.process(file_path, input_bytes,ext)
+
+        # NEW: for each page, extract embedded images
+        eie=EmbeddedImageExtractor()
+        pages = self.extract_embedded_images_for_pages(images, file_path, ext)
 
         # Extract Markdown from images
         markdown_output, text_content = self.extractor.extract_markdown(images, include_image=include_image)
@@ -263,6 +310,10 @@ class MarkdownAndChunkDocuments:
         ext = get_file_extension(file_path, file_name)
         yield from report(15, "Processing file into images...")
         images = strategy.process(file_path, input_bytes, ext)
+
+        # NEW: for each page, extract embedded images
+        eie = EmbeddedImageExtractor()
+        pages = self.extract_embedded_images_for_pages(images, file_path, ext)
 
         # 3️⃣ Extract Markdown
         yield from report(35, "Extracting markdown...")

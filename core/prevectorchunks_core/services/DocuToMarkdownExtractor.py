@@ -41,6 +41,84 @@ class DocuToMarkdownExtractor:
             with open(tmp.name, "rb") as f:
                 return base64.b64encode(f.read()).decode("utf-8")
 
+    def extract_markdown_pages(self, pages, include_image: bool = True):
+        """Extracts Markdown from page images and integrates embedded image data."""
+        all_outputs = []
+        text_content = ""
+
+        for i, page in enumerate(pages, start=1):
+            print(f"🧠 Processing page {i}/{len(pages)}...")
+
+            # 1. Get the primary page image for OCR/Parsing
+            # If 'page' is a dict, we use the 'rendered_image' key
+            rendered_image = page.get("page_image")
+            b64_page_image = self._image_to_base64(rendered_image)
+
+            processor = ImageProcessor(model_name="gpt-4o-mini")
+
+            fins = [
+                {"type": "text", "text": (
+                    "You are a document parser. Extract all text, images and tables "
+                    "from this image and format the output in clean Markdown. "
+                    "Preserve table structure, headings, and lists. If no markdown, put a space. "
+                    "Describe any visual elements or images found on this page."
+                    "Return only VALID JSON with keys: markdown_text, short_title, page_number, summary."
+                )},
+
+            ]
+
+            response = processor.analyze(encoded_image=b64_page_image, finstructioncontent=fins)
+
+            if isinstance(response, str):
+                try:
+                    response = json.loads(response)
+                except json.JSONDecodeError:
+                    print('skipping quietly')
+                    continue
+
+            # 2. Integrate text content
+            text_content += "\n" + response.get("markdown_text", "")
+
+            # 3. Handle Embedded Images for this page
+            # We attach the high-res embedded images found in the DOCX to the page response
+            if include_image:
+                response["page_image_data"] = b64_page_image
+                # Map the specific embedded images extracted from the DOCX for this page
+
+                response["embedded_images"] = self.conv_to_base64(page,response)
+
+            response["image_index"] = i
+            response["page_number"] = i
+
+            all_outputs.append(response)
+
+        return all_outputs, text_content
+
+    def conv_to_base64(self, page,response):
+
+        # Get the raw list of embedded images (which likely contains binary blobs)
+        raw_embedded_list = page.get("embedded_images", [])
+        encoded_images = []
+
+        for img in raw_embedded_list:
+            # Check if we have image_bytes or a blob
+            # The source data from your extractor typically provides 'image_bytes' or 'blob'
+            image_bytes = img.get("image_bytes") or img.get("image_data")
+
+            if isinstance(image_bytes, bytes):
+                # Encode to base64 and decode to utf-8 string for JSON compatibility
+                b64_string = base64.b64encode(image_bytes).decode("utf-8")
+            else:
+                # If it's already a string or empty, keep as is
+                b64_string = image_bytes
+
+            encoded_images.append({
+                "image_index": img.get("image_index"),
+                "image_data": b64_string,  # Now a Base64 string
+                "content_type": img.get("content_type", "image/png")
+            })
+
+        return json.dumps(encoded_images)
     def extract_markdown(self, images,include_image:bool=True):
         """Extracts Markdown-formatted text from each image page."""
         all_outputs = []
@@ -51,7 +129,7 @@ class DocuToMarkdownExtractor:
             b64_image = self._image_to_base64(image)
             processor = ImageProcessor(model_name="gpt-4o-mini")
 
-            fins = [{"type": "text", "text": "You are a document parser. Extract all text and tables "
+            fins = [{"type": "text", "text": "You are a document parser. Extract all text, images and tables "
                                              "from this image and format the output in clean Markdown. "
                                              "Preserve table structure, headings, and lists. If there is no markdown, put a space. "
                                              "Put your result in a JSON object with the following keys:"
