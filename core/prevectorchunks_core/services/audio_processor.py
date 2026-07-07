@@ -11,7 +11,7 @@ from dotenv import load_dotenv
 from langchain import hub
 from langchain_core.messages import HumanMessage
 from langchain_openai import ChatOpenAI
-from langchain_core.pydantic_v1 import BaseModel
+from pydantic import BaseModel
 from typing import Optional
 
 from openai import OpenAI

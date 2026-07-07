@@ -4,15 +4,16 @@ A scalable LangChain-based propositional indexing pipeline.
 Uses LangChain Hub template "wfh/proposal-indexing" with batching support.
 """
 from dotenv import load_dotenv
+from langchain_core.prompts import ChatPromptTemplate
 
 from ..utils.extract_content import extract_content_agnostic
 load_dotenv(override=True)# must come firs
-# t
-from langchain import hub
-from langchain_core.pydantic_v1 import BaseModel
+#
+from pydantic import BaseModel
 from typing import List
 import os
 from langchain_openai import ChatOpenAI
+from langchain_core.load import loads
 print(os.getenv("OPENAI_API_KEY"))
 # -----------------------------
 # 1️⃣ Define data model
@@ -23,8 +24,8 @@ class Sentences(BaseModel):
 from dotenv import load_dotenv
 import os
 from langchain_openai import ChatOpenAI
-from langchain import hub
-from langchain_core.pydantic_v1 import BaseModel
+from langsmith import Client   # 💡 This parses the JSON layout back into a live object
+from pydantic import BaseModel
 from typing import List
 
 class Sentences(BaseModel):
@@ -49,15 +50,26 @@ class PropositionalIndexer:
         self.llm = ChatOpenAI(
             model=self.model_name,
             temperature=0,
-            openai_api_key=self.api_key
+            api_key=self.api_key
         )
         self.chain = self._load_chain()
 
     def _load_chain(self):
-        """Load LangChain Hub propositional indexing template"""
-        obj = hub.pull("wfh/proposal-indexing")
+        """Load LangChain Hub propositional indexing template cleanly using LangSmith"""
+        # 💡 Initialize the standard LangSmith client
+        client = Client()
+
+        # 💡 Use pull_prompt instead of pull
+        obj = client.pull_prompt("wfh/proposal-indexing",dangerously_pull_public_prompt=True)
+
+        # Unpack the serialized configuration string if it returns as raw JSON
+        if isinstance(obj, str) and obj.strip().startswith("{"):
+            prompt = loads(obj)
+        else:
+            prompt = obj
+
         extraction_llm = self.llm.with_structured_output(Sentences)
-        return obj | extraction_llm
+        return prompt | extraction_llm
 
     def _chunk_text(self, text: str):
         """Split text into batches for large documents"""

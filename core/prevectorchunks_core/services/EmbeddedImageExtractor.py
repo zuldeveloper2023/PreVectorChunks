@@ -39,6 +39,56 @@ class EmbeddedImageExtractor:
 
         return images
 
+
+
+    def extract_embedded_images_from_pdf_page(self, file_path, page_number):
+        """
+        Extract all embedded images from a PDF.
+
+        Returns:
+        [
+            {
+                "page": 1,
+                "image_index": 1,
+                "image_data": "...base64...",
+                "width": 640,
+                "height": 480,
+                "ext": "png"
+            },
+            ...
+        ]
+        """
+        images = []
+
+        pdf = fitz.open(file_path)
+
+        try:
+            for page_num in range(len(pdf)):
+                page = pdf.load_page(page_num)
+
+                # List all images on this page
+                image_list = page.get_images(full=True)
+
+                for image_index, img in enumerate(image_list, start=1):
+                    xref = img[0]
+
+                    image_info = pdf.extract_image(xref)
+
+                    image_bytes = image_info["image"]
+
+                    images.append({
+                        "page": page_num + 1,
+                        "image_index": image_index,
+                        "image_data": b64encode(image_bytes).decode("utf-8"),
+                        "width": image_info.get("width"),
+                        "height": image_info.get("height"),
+                        "ext": image_info.get("ext")
+                    })
+
+        finally:
+            pdf.close()
+
+            return images
     def _format_output(self, blob, rId):
         return {
             "image_data": b64encode(blob).decode("utf-8"),

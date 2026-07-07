@@ -13,7 +13,7 @@ from typing import Optional
 from langchain.chat_models import init_chat_model
 from langchain_core.messages import HumanMessage
 from openai import OpenAI
-from langchain_core.pydantic_v1 import BaseModel
+from pydantic import BaseModel
 
 
 # -----------------------------------------------------
@@ -43,7 +43,7 @@ class ImageProcessor:
             client = init_chat_model(
                 model=model_name,
                 model_provider="openai",  # you can later swap to "anthropic", "google", etc.
-                api_key=api_key
+                api_key=self.api_key
             )
         self.llm = client
         # Initialize multimodal client
@@ -80,7 +80,7 @@ class ImageProcessor:
                     ]
         content1.extend(finstructioncontent)
         # Call the LangChain model
-        response_msg = self.llm.predict_messages([HumanMessage(content=content1)])
+        response_msg = self.llm.invoke([HumanMessage(content=content1)])
 
         # Extract the text
         result_text = response_msg.content

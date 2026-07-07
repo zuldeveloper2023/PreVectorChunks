@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "prevectorchunks-core"
-version = "0.1.39"
+version = "0.1.41"
 description = "A Python module that allows conversion of a document into chunks to be inserted into Pinecone vector database"
 readme = "README.md"
 license = { file = "LICENSE" }
@@ -13,49 +13,42 @@ authors = [
     { name = "Zul Al-Kabir", email = "zul.developer.2023@gmail.com" }
 ]
 
+
 dependencies = [
-    "packaging~=24.1",
-    "openai>=2.6.0,<3.0.0",
-    "python-dotenv~=1.0.1",
-    "PyJWT~=2.7.0",
+    "Django==5.1",
+    "django-cors-headers~=4.4.0",
     "fastapi~=0.112.2",
-    "datasets~=4.1.0",
+    "PyJWT~=2.7.0",
+    "langchain-text-splitters~=0.3.11",
+    "openai~=2.6.0",
     "pinecone~=7.3.0",
+    "python-dotenv~=1.0.1",
     "pytesseract~=0.3.13",
     "python-docx~=1.2.0",
     "PyPDF2~=3.0.1",
     "pillow~=11.3.0",
-    "torch~=2.2.2",
-    "torchvision~=0.17.2",
-    "torchaudio~=2.2.2",
+    "datasets~=4.1.1",
+    "torch~=2.6.0",
+    "torchvision~=0.21.0",
+    "torchaudio~=2.6.0",
     "sentence-transformers~=5.1.1",
-    "py-gutenberg~=1.0.3",
-    "langchain-text-splitters~=0.3.11",
-    "langchain~=0.3",
-    "langchain_openai~=0.3.35",
-    "accelerate>=0.22.0",
     "pathlib~=1.0.1",
     "transformers~=4.57.0",
     "imageio-ffmpeg~=0.6.0",
-    "opencv-python~= 4.8.0.76",
+    "opencv-python~=4.12.0.88",
     "requests~=2.32.5",
-    "langchain-core~=0.3.78",
+    "langchain~=1.3.9",
+    "langchain-openai~=1.0.0",
     "pdf2image~=1.17.0",
     "docx2pdf~=0.1.8",
-    "numpy~=1.23.5",
+    "numpy~=2.2.6",
     "scikit-learn~=1.7.2",
-    "PyMuPDF~=1.22.5",
-    "pypandoc~=1.13",
-    "reportlab~=4.1.0",
-    "weasyprint~=62.0",
-    "lxml~=4.9.3",
-    "cssselect2~=0.7.0",
-    "cairocffi~=1.4.0",
-    "tensorflow~=2.12.0",   # <-- Add this
-        # 👉 Add these
-    "pandas~=2.2.2",
-    "openpyxl~=3.1.2",
-    "python-pptx~=0.6.21",
+    "PyMuPDF~=1.26.0",
+    "pypandoc~=1.15",
+    "reportlab~=4.2.5",
+    "langchainhub~=0.1.21",
+    "python-pptx~=1.0.2"
+    #"fitz~=0.0.1.dev2",
 ]
 
 

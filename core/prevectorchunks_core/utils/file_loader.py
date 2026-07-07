@@ -26,6 +26,8 @@ load_dotenv(override=True)
 client =  OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 from django.core.files.uploadedfile import UploadedFile
 
+from langsmith import Client
+from langchain_core.load import loads  # 💡 This parses the JSON layout back into a live object
 from enum import Enum
 import pandas as pd
 from pptx import Presentation
@@ -252,7 +254,7 @@ def split_text_by_config(text, splitter_config:SplitterConfig=None, binary_data=
                     range(0, len(words), splitter_config.chunk_size)]
 
 import json
-from langchain.schema import HumanMessage
+from langchain_core.messages import HumanMessage
 import uuid
 
 def process_with_llm(chunk, instructions=None, xclient=None):
